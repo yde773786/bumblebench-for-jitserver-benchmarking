@@ -61,7 +61,9 @@ public class Launcher extends Util {
 	}
 	public static void parseJitServerOptions() throws IOException {
 		File file = new File("./JITServerArgs.txt");
-		System.getProperties().load(new FileInputStream(file));
+		InputStream stream = new FileInputStream(file);
+		System.getProperties().load(stream);
+		stream.close();
 	}
 
 	static void runBumbleMainOn(BumbleBench instance) throws NoSuchMethodException, IllegalAccessException {

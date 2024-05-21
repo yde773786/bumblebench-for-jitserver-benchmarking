@@ -8,8 +8,8 @@
         },
         {
             "kernels": [
-                {"kernel_name": "TardyBench", "invoc_count": 2},
-                {"kernel_name": "TardyBench", "invoc_count": 1}
+                {"kernel_name": "TardyBench", "invoc_count": 1},
+                {"kernel_name": "TardyBench", "invoc_count": 2}
             ]
         }
     ]

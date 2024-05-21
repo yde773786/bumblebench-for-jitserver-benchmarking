@@ -341,7 +341,7 @@ public abstract class BumbleBench extends Util implements Runnable {
 
 	/*
 	 * Watchdog functionality
-	 */
+	 */`
 
 	class WatchdogThread extends Thread {
 		Thread _benchmarkThread;

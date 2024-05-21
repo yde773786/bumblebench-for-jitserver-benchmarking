@@ -2,6 +2,7 @@ package net.adoptopenjdk.bumblebench.jitserver;
 
 import net.adoptopenjdk.bumblebench.core.MicroBench;
 
+import java.util.concurrent.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ public final class JITserver extends MicroBench {
 
     // Classes and corresponding invocation counts
     static final ArrayList<ArrayList<Object[]>> classesToInvocation;
+    private final ExecutorService pool = Executors.newFixedThreadPool(100);
 
     // Thread to call doBatch for each kernel
     private static final class DoBatchThread implements Runnable {
@@ -82,21 +84,23 @@ public final class JITserver extends MicroBench {
 
     @Override
     protected long doBatch(long numIterations) throws InterruptedException {
-
-        Thread[] threads_array = new Thread[JITserver.doBatchRunnables.length];
-
+        Future<?>[] futures = new Future[JITserver.doBatchRunnables.length];
         // JITServer doBatch iterations
         for (long i = 0; i < numIterations; i++) {
 
             // Start each thread
-            for(int j = 0; j < doBatchRunnables.length; j++){
-                threads_array[j] = new Thread(doBatchRunnables[j]);
-                threads_array[j].start();
+            for( int q = 0; q < doBatchRunnables.length; q++){
+                Future<?> future = pool.submit(doBatchRunnables[q]);
+                futures[q] = future;
             }
 
-            // Wait for each thread to finish
-            for(Thread thread : threads_array){
-                thread.join();
+            for (Future<?> future : futures) {
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    System.err.println("Error in future.get()");
+                    throw new RuntimeException(e);
+                }
             }
         }
 

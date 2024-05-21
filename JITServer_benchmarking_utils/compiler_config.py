@@ -54,4 +54,8 @@ def get_compiler_args(json_file, log_directory):
                 other_flags += "-XX:JITServerPort=" + str(config[key]) + " "
             elif strings[1] == "JIT_server_address":
                 other_flags += "-XX:JITServerAddress=" + str(config[key]) + " "
+
+    xjit_flags = xjit_flags if xjit_flags.strip() != '-Xjit:' else ""
+    xaot_flags = xaot_flags if xaot_flags != '-Xaot:' else ""
+
     return xjit_flags, xaot_flags, other_flags

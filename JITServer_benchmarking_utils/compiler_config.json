@@ -1,11 +1,1 @@
-{
-    "JIT: method_configs": [
-        {"method_signature": "java/lang/System.getSysPropBeforePropertiesInitialized(I)Ljava/lang/String;", "temperature": "hot", "invocation_count_till_compiled": 0}
-    ],
-    "JIT: global_invocation_count_till_compiled": 5,
-    "JIT: log_file": "vlog_file",
-    "JIT: enable_JIT": false,
-    "AOT: enable_AOT": false,
-    "AOT: AOT_count": 0,
-    "VM: use_JIT_server": true
-}
+{}

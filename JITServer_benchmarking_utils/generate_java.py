@@ -15,7 +15,7 @@ def generate_body(file:str, i: int) -> None:
         return
 
 if __name__ == '__main__':
-    i = 10
+    i = 1
     file = "../net/adoptopenjdk/bumblebench/examples/generated_code"+str(i)+".java"
 
     with open(file, 'w') as f:

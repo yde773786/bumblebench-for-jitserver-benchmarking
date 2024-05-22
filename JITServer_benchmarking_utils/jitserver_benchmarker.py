@@ -27,7 +27,7 @@ openj9_path = args['openj9_path']
 bumblebench_jitserver_path = args['bumblebench_jitserver_path']
 loud_output = args['loud_output']
 
-compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, True)
+compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
 kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
 log_hash = compiler_hash + kernel_hash
 log_directory = config_comparer.create_hash_from_str(log_hash)

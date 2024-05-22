@@ -1,0 +1,32 @@
+
+
+plugins{
+    id 'java'
+    id 'application'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['.']
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "net.adoptopenjdk.bumblebench.core.Launcher"
+    }
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.0'
+}
+
+application{
+    mainClass = 'net.adoptopenjdk.bumblebench.core.Launcher'
+}

@@ -46,17 +46,18 @@ public abstract class MicroBench extends BumbleBench {
 	protected abstract long doBatch(long numIterations) throws InterruptedException;
 
 	protected final float attempt(float targetScore) throws InterruptedException {
-		float iterationRate;
-		if (Options.TARGET_INCLUDES_PAUSES) {
-			// Scale down the targetIterations so they can finish in a shorter
-			// unpaused time, thereby making the total elapsed time (which
-			// includes pauses) hit the desired target.
-			iterationRate = targetScore * Math.max(_unpausedFraction, Options.MIN_UNPAUSED_FACTOR);
-		} else {
-			iterationRate = targetScore;
-		}
+//		float iterationRate;
+//		if (Options.TARGET_INCLUDES_PAUSES) {
+//			// Scale down the targetIterations so they can finish in a shorter
+//			// unpaused time, thereby making the total elapsed time (which
+//			// includes pauses) hit the desired target.
+//			iterationRate = targetScore * Math.max(_unpausedFraction, Options.MIN_UNPAUSED_FACTOR);
+//		} else {
+//			iterationRate = targetScore;
+//		}
 
-		long targetIterations = (long)(iterationRate * Options.BATCH_TARGET_DURATION / 1000F); // This could saturate, but I'll worry about that when we get computers that can do MAX_LONG calculations per second
+		//long targetIterations = (long)(iterationRate * Options.BATCH_TARGET_DURATION / 1000F); // This could saturate, but I'll worry about that when we get computers that can do MAX_LONG calculations per second
+		long targetIterations = 1;
 		targetIterations = Math.max(targetIterations, 1);
 
 		// The call to doBatch, wrapped as tightly as possible by System.nanoTime()
@@ -67,38 +68,42 @@ public abstract class MicroBench extends BumbleBench {
 		long returnTime = System.nanoTime();
 
 		// Follow-up calculations.  Not time-critical.
-		// 
+		//
 		long stopTime = isTimerPaused()? _pauseStartTime : returnTime;
 		long elapsedTime = stopTime - startTime;
 		long unpausedTime = elapsedTime - _pauseTotalDuration;
 		long measuredDuration = Options.TARGET_INCLUDES_PAUSES? elapsedTime : unpausedTime;
 		float measuredRate = measuredIterations * 1.0e+9f / unpausedTime;
 
-		// Update _unpausedFraction for next time
-		if (elapsedTime > 0) {
-			_unpausedFraction = (float)unpausedTime / (float)elapsedTime;
-			if (Options.TARGET_INCLUDES_PAUSES
-				&& elapsedTime / Options.BATCH_TARGET_DURATION > Options.MAX_TIME_DILATION
-				&& Options.MIN_UNPAUSED_FACTOR / _unpausedFraction > Options.MAX_TIME_DILATION)
-				throw new InterruptedException("Benchmark is spending too much time paused; try increasing option \"maxTimeDilation\" if you don't mind long-running batches");
-		}
+		out().println("[elapsedTime] The calculation took: " + elapsedTime + " nanoseconds, or " + elapsedTime/1000000000.0 + " seconds");
+		out().println("[unpausedTime] The calculation took: " + unpausedTime + " nanoseconds, or " +  unpausedTime/1000000000.0 + " seconds");
+//		// Update _unpausedFraction for next time
+//		if (elapsedTime > 0) {
+//			_unpausedFraction = (float)unpausedTime / (float)elapsedTime;
+//			if (Options.TARGET_INCLUDES_PAUSES
+//				&& elapsedTime / Options.BATCH_TARGET_DURATION > Options.MAX_TIME_DILATION
+//				&& Options.MIN_UNPAUSED_FACTOR / _unpausedFraction > Options.MAX_TIME_DILATION)
+//				throw new InterruptedException("Benchmark is spending too much time paused; try increasing option \"maxTimeDilation\" if you don't mind long-running batches");
+//		}
+//
+//		if (VERBOSE) {
+//			out().println(
+//				  " elapsedTime=" + elapsedTime
+//				+ " unpausedTime=" + unpausedTime
+//				+ " targetIterations=" + targetIterations
+//				+ " measuredIterations=" + measuredIterations
+//				+ " measuredDuration=" + measuredDuration
+//				+ " measuredRate=" + measuredRate
+//				+ " targetScore=" + targetScore
+//				);
+//		}
+//
+//		if (Options.UNSPECIFIED_ESTIMATE)
+//			measuredRate = (measuredRate >= targetScore)? UNSPECIFIED_SUCCESS : UNSPECIFIED_FAILURE;
 
-		if (VERBOSE) {
-			out().println(
-				  " elapsedTime=" + elapsedTime
-				+ " unpausedTime=" + unpausedTime
-				+ " targetIterations=" + targetIterations
-				+ " measuredIterations=" + measuredIterations
-				+ " measuredDuration=" + measuredDuration
-				+ " measuredRate=" + measuredRate
-				+ " targetScore=" + targetScore
-				);
-		}
+//		return measuredRate;
 
-		if (Options.UNSPECIFIED_ESTIMATE)
-			measuredRate = (measuredRate >= targetScore)? UNSPECIFIED_SUCCESS : UNSPECIFIED_FAILURE;
-
-		return measuredRate;
+		return 0;
 	}
 
 	static final int LONG_BATCH_SECONDS = option("longBatchSeconds", 0);

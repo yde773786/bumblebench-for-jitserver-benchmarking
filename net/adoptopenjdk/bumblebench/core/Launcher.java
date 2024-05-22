@@ -1,26 +1,28 @@
 /*******************************************************************************
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*******************************************************************************/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
 package net.adoptopenjdk.bumblebench.core;
 
-import java.io.InputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+
 
 public class Launcher extends Util {
 
@@ -44,6 +46,9 @@ public class Launcher extends Util {
 		}
 
 		String testName = args[0].replace('.', '$');
+		if (testName.equals("JITserver")){
+			parseJitServerOptions();
+		}
 
 		Class testClass = loadTestClass(packages, testName);
 		int numParallelInstances = option("parallelInstances", 0);
@@ -53,6 +58,10 @@ public class Launcher extends Util {
 			runBumbleMainOn(StartupBench.create(testClass));
 		else
 			runBumbleMainOn((BumbleBench)testClass.newInstance());
+	}
+	public static void parseJitServerOptions() throws IOException {
+		File file = new File("./JITServerArgs.txt");
+		System.getProperties().load(new FileInputStream(file));
 	}
 
 	static void runBumbleMainOn(BumbleBench instance) throws NoSuchMethodException, IllegalAccessException {
@@ -66,19 +75,20 @@ public class Launcher extends Util {
 	}
 
 	static final String defaultPackagePath = ":"
-		+ ":net.adoptopenjdk.bumblebench.collections"
-		+ ":net.adoptopenjdk.bumblebench.crypto"
-		+ ":net.adoptopenjdk.bumblebench.examples"
-		+ ":net.adoptopenjdk.bumblebench.gpu"
-		+ ":net.adoptopenjdk.bumblebench.lambda"
-		+ ":net.adoptopenjdk.bumblebench.math"
-		+ ":net.adoptopenjdk.bumblebench.indy"
-		+ ":net.adoptopenjdk.bumblebench.daa"
-		+ ":net.adoptopenjdk.bumblebench.json"
-		+ ":net.adoptopenjdk.bumblebench.string"
-		+ ":net.adoptopenjdk.bumblebench.humble"
-		+ ":net.adoptopenjdk.bumblebench.arraycopy"
-		;
+			+ ":net.adoptopenjdk.bumblebench.collections"
+			+ ":net.adoptopenjdk.bumblebench.crypto"
+			+ ":net.adoptopenjdk.bumblebench.examples"
+			+ ":net.adoptopenjdk.bumblebench.gpu"
+			+ ":net.adoptopenjdk.bumblebench.lambda"
+			+ ":net.adoptopenjdk.bumblebench.math"
+			+ ":net.adoptopenjdk.bumblebench.indy"
+			+ ":net.adoptopenjdk.bumblebench.daa"
+			+ ":net.adoptopenjdk.bumblebench.json"
+			+ ":net.adoptopenjdk.bumblebench.string"
+			+ ":net.adoptopenjdk.bumblebench.humble"
+			+ ":net.adoptopenjdk.bumblebench.arraycopy"
+			+ ":net.adoptopenjdk.bumblebench.jitserver"
+			;
 
 	public static Class loadTestClass(String[] packageNames, String name) throws ClassNotFoundException, IOException {
 		ClassNotFoundException typicalException = null;

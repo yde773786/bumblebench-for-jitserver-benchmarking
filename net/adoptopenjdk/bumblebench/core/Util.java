@@ -147,7 +147,7 @@ public class Util {
 		JsonNode threads;
 
 		try {
-			threads = mapper.readTree(new File(jsonFile));
+			threads = mapper.readTree(new File(jsonFile)).get("threads");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -159,7 +159,7 @@ public class Util {
 		for(int i = 0; i < threads.size(); i++){
 
 			// Get each thread and initialize the arrays to store the corresponding method, class, and invocation count
-			JsonNode thread = threads.get("threads");
+			JsonNode thread = threads.get(i).get("kernels");
 			Method[] methodReqArr = new Method[thread.size()];
 			Class<? extends MicroBench>[] classKeyArr = new Class[thread.size()];
 			int[] invocationCountArr = new int[thread.size()];

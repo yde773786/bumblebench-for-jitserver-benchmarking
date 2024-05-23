@@ -22,7 +22,9 @@ jar {
     manifest {
         attributes "Main-Class": "net.adoptopenjdk.bumblebench.core.Launcher"
     }
-
+    from("$rootDir") {
+        include '**/*.properties'
+    }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }

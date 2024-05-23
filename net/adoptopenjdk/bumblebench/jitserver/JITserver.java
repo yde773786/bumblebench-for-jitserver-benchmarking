@@ -16,7 +16,7 @@ public final class JITserver extends MicroBench {
     static final ThreadConfig[] doBatchRunnables;
 
     static {
-        doBatchRunnables = option("classesToInvoc", new ThreadConfig[]{});
+        doBatchRunnables = option("jsonFile", new ThreadConfig[]{});
     }
 
     @Override

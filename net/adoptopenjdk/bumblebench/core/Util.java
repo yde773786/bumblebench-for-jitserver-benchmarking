@@ -146,7 +146,7 @@ public class Util {
 		if (LIST_OPTIONS)
 			out().println("- Option " + name + " default " + defaultValue);
 
-		String jsonFile = optionString("jsonFile");
+		String jsonFile = optionString(name);
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode threads;
 

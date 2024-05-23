@@ -14,6 +14,9 @@
 
 package net.adoptopenjdk.bumblebench.core;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -134,37 +137,65 @@ public class Util {
 		return true;
 	}
 
-	public static ArrayList<ArrayList<Object[]>> option(String name, ArrayList<ArrayList<Object[]>> defaultValue){
+	public static ThreadConfig[] option(String name, ThreadConfig[] defaultValue){
 
 		if (LIST_OPTIONS)
 			out().println("- Option " + name + " default " + defaultValue);
 
-		ArrayList<ArrayList<Object[]>> classArrays = new ArrayList<>();
+		String jsonFile = optionString("jsonFile");
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode threads;
 
-		String value = optionString(name);
-		if (value != null) {
-			String[] hash = value.split(" ");
-			String packagePath = option("packages", defaultPackagePath);
-			String[] packages = packagePath.split("[:;]");
-			ArrayList<Object[]> classArray = new ArrayList<>();
-
-			for (int i = 0; i < hash.length - 1; i += 2) {
-				if(hash[i].equals("/")){
-					classArrays.add(classArray);
-					classArray = new ArrayList<>();
-					i++;
-				}
-				try {
-					Object[] items = {loadTestClass(packages, hash[i]), Integer.parseInt(hash[i + 1])};
-					classArray.add(items);
-				} catch (ClassNotFoundException | IOException e) {
-					err().println("Classes do not exist");
-					System.exit(1);
-				}
-			}
-			classArrays.add(classArray);
+		try {
+			threads = mapper.readTree(new File(jsonFile));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-		return classArrays;
+
+		ThreadConfig[] threadConfigs = new ThreadConfig[threads.size()];
+		String packagePath = option("packages", defaultPackagePath);
+		String[] packages = packagePath.split("[:;]");
+
+		for(int i = 0; i < threads.size(); i++){
+
+			// Get each thread and initialize the arrays to store the corresponding method, class, and invocation count
+			JsonNode thread = threads.get("threads");
+			Method[] methodReqArr = new Method[thread.size()];
+			Class<? extends MicroBench>[] classKeyArr = new Class[thread.size()];
+			int[] invocationCountArr = new int[thread.size()];
+
+			// Get each kernel within the thread
+			for(int j = 0; j < thread.size(); j++){
+				JsonNode kernel = thread.get(j);
+
+				String className = kernel.get("kernel_name").asText();
+				int invocations = kernel.get("invoc_count").asInt();
+				Method methodReq;
+				Class<? extends MicroBench> kernelClass;
+
+                try {
+                    kernelClass = loadTestClass(packages, className);
+					try {
+						methodReq = kernelClass.getDeclaredMethod("doBatch", long.class);
+					} catch (NoSuchMethodException e) {
+						System.err.println("doBatch not implemented");
+						throw new RuntimeException(e);
+					}
+					methodReq.setAccessible(true);
+                } catch (ClassNotFoundException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+				methodReqArr[j] = methodReq;
+				classKeyArr[j] = kernelClass;
+				invocationCountArr[j] = invocations;
+            }
+
+			ThreadConfig threadConfig = new ThreadConfig(methodReqArr, classKeyArr, invocationCountArr);
+			threadConfigs[i] = threadConfig;
+		}
+
+		return threadConfigs;
 	}
 
 	public static int option(String name, int defaultValue) {

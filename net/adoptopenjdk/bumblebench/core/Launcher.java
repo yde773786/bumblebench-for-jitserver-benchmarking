@@ -92,6 +92,8 @@ public class Launcher extends Util {
 			+ ":net.adoptopenjdk.bumblebench.jitserver"
 			;
 
+	static final String kernelConfigFile = "kernel_config.json";
+
 	public static Class loadTestClass(String[] packageNames, String name) throws ClassNotFoundException, IOException {
 		ClassNotFoundException typicalException = null;
 		for (String packageName: packageNames) {

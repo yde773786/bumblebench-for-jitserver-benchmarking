@@ -21,7 +21,11 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static net.adoptopenjdk.bumblebench.core.Launcher.defaultPackagePath;
 import static net.adoptopenjdk.bumblebench.core.Launcher.loadTestClass;

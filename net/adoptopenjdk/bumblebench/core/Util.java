@@ -17,15 +17,15 @@ package net.adoptopenjdk.bumblebench.core;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static net.adoptopenjdk.bumblebench.core.Launcher.defaultPackagePath;
 import static net.adoptopenjdk.bumblebench.core.Launcher.loadTestClass;

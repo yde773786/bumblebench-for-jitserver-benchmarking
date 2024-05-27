@@ -2,7 +2,7 @@
 import argparse
 import subprocess
 from jitserver_benchmarker import main_function
-
+import time
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='runwrapper',
@@ -37,6 +37,7 @@ if __name__ == "__main__":
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
+            time.sleep(10)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
         else:
@@ -44,6 +45,7 @@ if __name__ == "__main__":
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
             print("command: " + cmd)
+            time.sleep(10)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
             proc.kill()
 

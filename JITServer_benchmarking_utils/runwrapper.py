@@ -1,7 +1,7 @@
 
 import argparse
 import subprocess
-from JITServer_benchmarking_utils.jitserver_benchmarker import main_function
+from jitserver_benchmarker import main_function
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -31,15 +31,15 @@ if __name__ == "__main__":
     changed_server_path = args['changed_server_path']
     cmd = ''
 
-    for i in range(num_runs * 2):
+    for i in range(int(num_runs) * 2):
         if i % 2 == 0:
-            cmd = f'./{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\\{{JITServer\\}}'
+            cmd = f'.{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\{{JITServer\}}'
             print("command: " + cmd)
             proc = subprocess.Popen(cmd)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
         else:
-            cmd = f'./{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\\{{JITServer\\}}'
+            cmd = f'.{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\{{JITServer\}}'
             proc = subprocess.Popen(cmd)
             print("command: " + cmd)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)

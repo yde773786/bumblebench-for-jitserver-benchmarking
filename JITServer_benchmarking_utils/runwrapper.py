@@ -35,12 +35,14 @@ if __name__ == "__main__":
         if i % 2 == 0:
             cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\{{JITServer\}}'
             print("command: " + cmd)
-            proc = subprocess.Popen(cmd)
+            splt = cmd.split(" ")
+            proc = subprocess.Popen(splt)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
         else:
             cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\{{JITServer\}}'
-            proc = subprocess.Popen(cmd)
+            splt = cmd.split(" ")
+            proc = subprocess.Popen(splt)
             print("command: " + cmd)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
             proc.kill()

@@ -34,7 +34,7 @@ def get_compiler_args(json_file, log_directory):
                     if xjit_flags.find("verbose") == -1:
                         xjit_flags += "verbose,"
 
-                    xjit_flags = xjit_flags.replace("verbose", "verbose=\\{JITServer\\}")
+                    xjit_flags = xjit_flags.replace("verbose", "verbose={JITServer}")
         elif key.startswith("AOT"):
             strings = key.split(":")
             strings[1] = strings[1].strip()

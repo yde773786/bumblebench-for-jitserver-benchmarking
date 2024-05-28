@@ -31,9 +31,11 @@ if __name__ == "__main__":
     changed_server_path = args['changed_server_path']
     cmd = ''
 
+    # Run the normal server and the changed server in parallel
+    # Each iteration has a warmup of the JITServer and then the actual benchmarking
     for i in range(int(num_runs) * 2):
         if i % 2 == 0:
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\{{JITServer\}}'
+            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
@@ -41,7 +43,7 @@ if __name__ == "__main__":
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
         else:
-            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose=\{{JITServer\}}'
+            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
             print("command: " + cmd)

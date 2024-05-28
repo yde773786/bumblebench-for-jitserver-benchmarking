@@ -32,17 +32,11 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
     shutil.copy(kernel_json_file, log_directory + "/kernel_config.json")
 
     if loud_output:
-        command = f'{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-        print(command)
-        split = command.split(" ")
-        proc = subprocess.Popen(split)
-        proc.wait()
+        command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver"
+        subprocess.call(command, shell=True)
     else:
-        command = f'{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver > {log_directory}/output_file.{now}'
-        print(command)
-        split = command.split(" ")
-        proc = subprocess.Popen(split)
-        proc.wait()
+        command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver > {log_directory}/output_file.{now}"
+        subprocess.call(command, shell=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

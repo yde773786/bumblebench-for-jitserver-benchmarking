@@ -43,7 +43,7 @@ if __name__ == "__main__":
             cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
-            proc = subprocess.Popen(splt)
+            proc = subprocess.Popen(splt, stdout=subprocess.PIPE)
             msg = proc.stdout.readline()
             while msg != "JITServer is ready to accept incoming requests":
                 data = proc.stdout.readline()
@@ -55,7 +55,7 @@ if __name__ == "__main__":
             paths = list(Path('.').glob('**/altered*'))
             cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered'
             splt = cmd.split(" ")
-            proc = subprocess.Popen(splt)
+            proc = subprocess.Popen(splt, stdout=subprocess.PIPE)
             print("command: " + cmd)
             msg = proc.stdout.readline()
             while msg != "JITServer is ready to accept incoming requests":

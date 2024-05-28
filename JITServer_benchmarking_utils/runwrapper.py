@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
         if i % 2 == 0:
             paths = list(Path('.').glob('**/normal*'))
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}} > tempfile'
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt, stdout=subprocess.PIPE)

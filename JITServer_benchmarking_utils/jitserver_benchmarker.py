@@ -1,6 +1,7 @@
 import subprocess
 from compiler_config import get_compiler_args
 from kernel_config import setup_kernel_args
+import os
 import argparse
 from pathlib import Path
 import shutil
@@ -14,28 +15,30 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
     log_hash = compiler_hash + kernel_hash
     log_directory = config_comparer.create_hash_from_str(log_hash)
-    Path(log_directory).mkdir(parents=True, exist_ok=True)
+    sp_directory = log_directory
 
-    xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, log_directory)
-    setup_kernel_args(kernel_json_file)
+    Path(log_directory).mkdir(parents=True, exist_ok=True)
 
     if altered_JITserver:
-        log_directory += "/altered_server"
+        sp_directory += "/altered_server"
     else:
-        log_directory += "/normal_server"
+        sp_directory += "/normal_server"
 
-    Path(log_directory).mkdir(parents=True, exist_ok=True)
+    Path(sp_directory).mkdir(parents=True, exist_ok=True)
+
+    xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, sp_directory)
+    setup_kernel_args(kernel_json_file)
 
     now = str(datetime.now())
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
-    shutil.copy(compiler_json_file, log_directory + "/compiler_config.json")
-    shutil.copy(kernel_json_file, log_directory + "/kernel_config.json")
+    shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
+    shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
 
     if loud_output:
         command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver"
         subprocess.call(command, shell=True)
     else:
-        command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver > {log_directory}/output_file.{now}"
+        command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver > {sp_directory}/output_file.{now}"
         subprocess.call(command, shell=True)
 
 if __name__ == "__main__":

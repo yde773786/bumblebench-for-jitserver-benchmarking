@@ -4,6 +4,7 @@ import os
 import subprocess
 from jitserver_benchmarker import main_function
 import time
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='runwrapper',
@@ -34,6 +35,8 @@ if __name__ == "__main__":
 
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
+
+    get_dir = ''
     for i in range(int(num_runs) * 2):
         if i % 2 == 0:
             cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
@@ -49,34 +52,49 @@ if __name__ == "__main__":
             proc = subprocess.Popen(splt)
             print("command: " + cmd)
             time.sleep(10)
-            main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
+            get_dir = main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
             proc.kill()
 
 
     # Do a final analysis of the results
     print("_________________Final analysis of results_________________")
     print("Normal server results:")
-    files = [f for f in os.listdir(normal_server_path) if 'output_file' in f]
-    files.sort(key=lambda x: os.path.getmtime(x))
+
+    report_file = open(get_dir + '/report.csv', 'w')
+    report_file.write("Run,Normal Server Time,Changed Server Time\n")
+    
+    files = [f for f in os.listdir(get_dir + '/normal_server/') if 'output_file' in f]
+    files.sort(key=lambda x: os.path.getmtime(get_dir + '/normal_server/' + x))
     avg_normal = 0
+
+    normal_report = []
+    
     for i, f in enumerate(files):
-        elapsedTime = f.readlines()[-2].split()[4]
+        elapsedTime = open(get_dir + '/normal_server/' + f, 'r').readlines()[-2].split()[4]
         print(f"Run {i+1} Elapsed Time: {elapsedTime}")
-        avg_normal += elapsedTime
+        avg_normal += int(elapsedTime)
+        normal_report.append(elapsedTime)
 
     avg_normal /= len(files)
 
     print("AVERAGE ELAPSED TIME FOR NORMAL SERVER: " + str(avg_normal))
 
     print("Changed server results:")
-    files = [f for f in os.listdir(changed_server_path) if 'output_file' in f]
-    files.sort(key=lambda x: os.path.getmtime(x))
+
+    altered_report = []
+
+    files = [f for f in os.listdir(get_dir + '/altered_server/') if 'output_file' in f]
+    files.sort(key=lambda x: os.path.getmtime(get_dir + '/altered_server/' + x))
     avg_changed = 0
     for i, f in enumerate(files):
-        elapsedTime = f.readlines()[-2].split()[4]
+        elapsedTime = open(get_dir + '/altered_server/' + f, 'r').readlines()[-2].split()[4]
         print(f"Run {i+1} Elapsed Time: {elapsedTime}")
-        avg_changed += elapsedTime
+        avg_changed += int(elapsedTime)
+        altered_report.append(elapsedTime)
 
     avg_changed /= len(files)
 
     print("AVERAGE ELAPSED TIME FOR CHANGED SERVER: " + str(avg_changed))
+
+    for i in range(len(normal_report)):
+        report_file.write(f"{i+1},{normal_report[i]},{altered_report[i]}\n")

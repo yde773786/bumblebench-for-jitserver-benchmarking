@@ -9,7 +9,7 @@ from datetime import datetime
 import config_comparer
 
 
-def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver) -> None:
+def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver) -> str:
 
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
@@ -40,6 +40,8 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
     else:
         command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver > {sp_directory}/output_file.{now}"
         subprocess.call(command, shell=True)
+
+    return log_directory
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

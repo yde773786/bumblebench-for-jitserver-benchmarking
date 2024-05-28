@@ -21,7 +21,6 @@ if __name__ == "__main__":
     parser.add_argument('-nsp', '--normal_server_path', required=True)
     parser.add_argument('-csp', '--changed_server_path', required=True)
 
-
     args = vars(parser.parse_args())
 
     compiler_json_file = args['compiler_configuration']

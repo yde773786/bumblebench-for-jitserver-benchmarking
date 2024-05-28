@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
         if i % 2 == 0:
             paths = list(Path('.').glob('**/normal*'))
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}} > tempServerLog'
+            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             time.sleep(10)
         else:
             paths = list(Path('.').glob('**/altered*'))
-            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered > tempServerLog'
+            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered'
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
             print("command: " + cmd)

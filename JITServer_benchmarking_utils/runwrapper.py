@@ -44,11 +44,12 @@ if __name__ == "__main__":
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt, stdout=subprocess.PIPE)
-            msg = proc.stdout.readline()
             while True:
+                msg = proc.stdout.readline()
                 print(msg)
                 if msg.strip() == "JITServer is ready to accept incoming requests":
                     break
+
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
             print("killed the process")
@@ -59,8 +60,8 @@ if __name__ == "__main__":
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt, stdout=subprocess.PIPE)
             print("command: " + cmd)
-            msg = proc.stdout.readline()
             while True:
+                msg = proc.stdout.readline()
                 print(msg)
                 if msg.strip() == "JITServer is ready to accept incoming requests":
                     break

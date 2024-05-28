@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
         if i % 2 == 0:
             paths = list(Path('.').glob('**/normal*'))
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}} > tempfile'
+            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
             # proc = subprocess.Popen(splt, stdout=subprocess.PIPE)
@@ -53,6 +53,7 @@ if __name__ == "__main__":
             with subprocess.Popen(splt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
                 for line in proc.stdout:
                     print(line)
+                    print("yo")
             rc = proc.returncode
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()

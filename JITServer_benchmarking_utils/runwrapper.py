@@ -2,7 +2,6 @@
 import argparse
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 from jitserver_benchmarker import main_function
@@ -21,7 +20,6 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-nsp', '--normal_server_path', required=True)
     parser.add_argument('-csp', '--changed_server_path', required=True)
-
 
     args = vars(parser.parse_args())
 
@@ -56,7 +54,6 @@ if __name__ == "__main__":
             paths = list(Path('.').glob('**/altered*'))
             cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered'
             splt = cmd.split(" ")
-            proc = subprocess.Popen(splt, stdout=subprocess.PIPE)
             print("command: " + cmd)
             with subprocess.Popen(splt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
                 for line in proc.stdout:

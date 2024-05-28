@@ -40,28 +40,28 @@ if __name__ == "__main__":
 
         if i % 2 == 0:
             paths = list(Path('.').glob('**/normal*'))
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}} > tempServerLog'
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
-            while True:
-                data = input()
-                if data.strip() == "JITServer is ready to accept incoming requests":
-                    break
+            f = open("tempServerLog", "r")
+            msg = f.readline()
+            while msg != "JITServer is ready to accept incoming requests":
+                data = f.readline()
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
             print("killed the process")
             time.sleep(10)
         else:
             paths = list(Path('.').glob('**/altered*'))
-            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered'
+            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered > tempServerLog'
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
             print("command: " + cmd)
-            while True:
-                data = input()
-                if data.strip() == "JITServer is ready to accept incoming requests":
-                    break
+            f = open("tempServerLog", "r")
+            msg = f.readline()
+            while msg != "JITServer is ready to accept incoming requests":
+                data = f.readline()
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
             proc.kill()
             print("killed the process")

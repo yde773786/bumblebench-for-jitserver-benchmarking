@@ -49,6 +49,7 @@ if __name__ == "__main__":
                 for line in proc.stdout:
                     counter += 1
                     print(counter)
+                    print(line)
             rc = proc.returncode
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()

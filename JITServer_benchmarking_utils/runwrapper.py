@@ -2,6 +2,8 @@
 import argparse
 import os
 import subprocess
+from pathlib import Path
+
 from jitserver_benchmarker import main_function
 import time
 if __name__ == "__main__":
@@ -35,23 +37,35 @@ if __name__ == "__main__":
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
     for i in range(int(num_runs) * 2):
+
         if i % 2 == 0:
+            paths = list(Path('.').glob('**/normal*'))
             cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
-            time.sleep(10)
+            while True:
+                data = input()
+                if data.strip() == "JITServer is ready to accept incoming requests":
+                    break
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
+            print("killed the process")
+            time.sleep(10)
         else:
-            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            paths = list(Path('.').glob('**/altered*'))
+            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered'
             splt = cmd.split(" ")
             proc = subprocess.Popen(splt)
             print("command: " + cmd)
-            time.sleep(10)
+            while True:
+                data = input()
+                if data.strip() == "JITServer is ready to accept incoming requests":
+                    break
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
             proc.kill()
-
+            print("killed the process")
+            time.sleep(10)
 
     # Do a final analysis of the results
     print("_________________Final analysis of results_________________")

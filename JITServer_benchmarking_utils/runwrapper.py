@@ -1,11 +1,16 @@
-
 import argparse
 import os
 import subprocess
-from pathlib import Path
-
 from jitserver_benchmarker import main_function
-import time
+
+def wait_for_server(splt):
+    proc = subprocess.Popen(splt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    for line in proc.stdout:
+        strip = line.strip()
+        if strip == "JITServer is ready to accept incoming requests":
+            return proc
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='runwrapper',
@@ -38,43 +43,30 @@ if __name__ == "__main__":
     for i in range(int(num_runs) * 2):
 
         if i % 2 == 0:
-            paths = list(Path('.').glob('**/normal*'))
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}} > tempServerLog'
+            print("starting up normal jitserver")
+            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
-            proc = subprocess.Popen(splt)
-            f = open("tempServerLog", "r")
-            msg = f.readline()
-            while msg != "JITServer is ready to accept incoming requests":
-                data = f.readline()
-            with subprocess.Popen(splt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
-                for line in proc.stdout:
-                    if line.strip() == "JITServer is ready to accept incoming requests":
-                        break
-            main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
+            proc = wait_for_server(splt)
+            main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output,
+                          False)
             proc.kill()
             print("killed the process")
-            time.sleep(10)
+            proc.wait()
         else:
-            paths = list(Path('.').glob('**/altered*'))
-            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=serverlogs/altered > tempServerLog'
+            print("starting up altered jitserver")
+            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             splt = cmd.split(" ")
-            proc = subprocess.Popen(splt)
             print("command: " + cmd)
-            f = open("tempServerLog", "r")
-            msg = f.readline()
-            while msg != "JITServer is ready to accept incoming requests":
-                data = f.readline()
-            with subprocess.Popen(splt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
-                for line in proc.stdout:
-                    if line.strip() == "JITServer is ready to accept incoming requests":
-                        break
-            main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
+            proc = wait_for_server(splt)
+            main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output,
+                          True)
             proc.kill()
             print("killed the process")
-            time.sleep(10)
+            proc.wait()
 
-    # Do a final analysis of the results
+
+# Do a final analysis of the results
     print("_________________Final analysis of results_________________")
     print("Normal server results:")
     files = [f for f in os.listdir(normal_server_path) if 'output_file' in f]
@@ -82,7 +74,7 @@ if __name__ == "__main__":
     avg_normal = 0
     for i, f in enumerate(files):
         elapsedTime = f.readlines()[-2].split()[4]
-        print(f"Run {i+1} Elapsed Time: {elapsedTime}")
+        print(f"Run {i + 1} Elapsed Time: {elapsedTime}")
         avg_normal += elapsedTime
 
     avg_normal /= len(files)
@@ -95,7 +87,7 @@ if __name__ == "__main__":
     avg_changed = 0
     for i, f in enumerate(files):
         elapsedTime = f.readlines()[-2].split()[4]
-        print(f"Run {i+1} Elapsed Time: {elapsedTime}")
+        print(f"Run {i + 1} Elapsed Time: {elapsedTime}")
         avg_changed += elapsedTime
 
     avg_changed /= len(files)

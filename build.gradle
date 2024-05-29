@@ -1,0 +1,43 @@
+
+
+plugins{
+    id 'java'
+    id 'application'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['.']
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes "Main-Class": "net.adoptopenjdk.bumblebench.core.Launcher"
+    }
+    from("$rootDir") {
+        include '**/*.properties'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    destinationDirectory.set(file("$rootDir"))
+    archiveBaseName = 'BumbleBench'
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.8.5'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.5'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.8.5'
+}
+
+application{
+    mainClass = 'net.adoptopenjdk.bumblebench.core.Launcher'
+}

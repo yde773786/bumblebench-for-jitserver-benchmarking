@@ -1,0 +1,15 @@
+{
+    "JIT: method_configs": [
+        {"method_signature": "java/lang/System.getSysPropBeforePropertiesInitialized(I)Ljava/lang/String;", "temperature": "hot", "invocation_count_till_compiled": 0}
+    ],
+    "JIT: global_invocation_count_till_compiled": 5,
+    "JIT: log_file": "vlog_file",
+    "JIT: enable_JIT": true,
+    "JIT: JIT_server_log": true,
+    "AOT: enable_AOT": false,
+    "AOT: AOT_count": 0,
+    "VM: use_JIT_server": true,
+    "VM: JIT_server_port": 38400,
+    "VM: JIT_server_address": "10.70.1.95",
+    "VM: number_of_compilation_threads": 1
+}

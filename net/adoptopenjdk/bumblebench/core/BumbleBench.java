@@ -128,10 +128,10 @@ public abstract class BumbleBench extends Util implements Runnable {
 	}
 
 	final boolean runAttempt(boolean lowball) throws InterruptedException {
-		float under = _estimate * (1-_uncertainty/2);
-		float over  = _estimate * (1+_uncertainty/2);
-		float target = lowball? under : over;
-
+//		float under = _estimate * (1-_uncertainty/2);
+//		float over  = _estimate * (1+_uncertainty/2);
+//		float target = lowball? under : over;
+		float target = 1;
 		// Run an experiment
 		//
 		if (VERBOSE)
@@ -140,64 +140,65 @@ public abstract class BumbleBench extends Util implements Runnable {
 
 		// Analyze the results
 		//
-		boolean runSucceeded;                    // Was the target score achieved?
-		boolean guessWasCorrect;                 // Was runSucceeded what we expected it to be based on the lowball/highball setting?
-		boolean newEstimateWasSpecified = false; // Did the run provide an estimate of the score it can achieve?
-		float oldEstimate = _estimate;
-		if (result >= target && result < Float.POSITIVE_INFINITY) {
-			runSucceeded = true;
-			recordSuccess(target);
-			guessWasCorrect = lowball;
-			_estimate = result;
-			newEstimateWasSpecified = true;
-		} else if (result <= 0F) {
-			// UNSPECIFIED_FAILURE
-			runSucceeded = false;
-			guessWasCorrect = !lowball;
-			_estimate = lowball? _estimate * (1-_uncertainty) : _estimate;
-		} else if (result < target) {
-			runSucceeded = false;
-			guessWasCorrect = !lowball;
-			_estimate = result; // This is why we can't handle result==0 here.  Estimate hits zero and never recovers
-			newEstimateWasSpecified = true;
-		} else {
-			// UNSPECIFIED_SUCCESS
-			runSucceeded = true;
-			recordSuccess(target);
-			guessWasCorrect = lowball;
-			_estimate = lowball? _estimate : _estimate * (1+_uncertainty);
-		}
-		if (_recentPeak == _maxPeak) {
-			if (under <= _maxPeak && _maxPeak <= over)
-				_maxPeakUncertainty = Math.min(_maxPeakUncertainty, _uncertainty);
-		}
-		if (!runSucceeded && target < _recentPeak)
-			_recentPeak = Float.NEGATIVE_INFINITY;
-		float oldUncertainty = _uncertainty;
-		if (runSucceeded && target >= Float.POSITIVE_INFINITY) {
-			// lowball guess or not, if we thought it was infinitely fast and the
-			// runSucceeded, we were right.  Otherwise, we may never terminate,
-			// always attempting to increase the already-infinite target score ever higher.
-			guessWasCorrect = true;
-		}
-		if (newEstimateWasSpecified) {
-			float impliedUncertainty = Math.abs(oldEstimate - result) / target;
-			if (impliedUncertainty > _uncertainty) {
-				if (TAME_UNCERTAINTY) {
-					// If the estimate was way off, just bump up the _uncertainty as though our guess was incorrect
-					_uncertainty *= INCORRECT_GUESS_ADJUSTMENT;
-				} else {
-					_uncertainty = impliedUncertainty;
-				}
-			} else {
-				_uncertainty *= guessWasCorrect? CORRECT_GUESS_ADJUSTMENT : INCORRECT_GUESS_ADJUSTMENT;
-			}
-		} else {
-			_uncertainty *= guessWasCorrect? CORRECT_GUESS_ADJUSTMENT : INCORRECT_GUESS_ADJUSTMENT;
-		}
-		_uncertainty = Math.min(_uncertainty, MAX_UNCERTAINTY); 
-		report(target, result, oldUncertainty, lowball, guessWasCorrect, runSucceeded);
-		return guessWasCorrect;
+//		boolean runSucceeded;                    // Was the target score achieved?
+//		boolean guessWasCorrect;                 // Was runSucceeded what we expected it to be based on the lowball/highball setting?
+//		boolean newEstimateWasSpecified = false; // Did the run provide an estimate of the score it can achieve?
+//		float oldEstimate = _estimate;
+//		if (result >= target && result < Float.POSITIVE_INFINITY) {
+//			runSucceeded = true;
+//			recordSuccess(target);
+//			guessWasCorrect = lowball;
+//			_estimate = result;
+//			newEstimateWasSpecified = true;
+//		} else if (result <= 0F) {
+//			// UNSPECIFIED_FAILURE
+//			runSucceeded = false;
+//			guessWasCorrect = !lowball;
+//			_estimate = lowball? _estimate * (1-_uncertainty) : _estimate;
+//		} else if (result < target) {
+//			runSucceeded = false;
+//			guessWasCorrect = !lowball;
+//			_estimate = result; // This is why we can't handle result==0 here.  Estimate hits zero and never recovers
+//			newEstimateWasSpecified = true;
+//		} else {
+//			// UNSPECIFIED_SUCCESS
+//			runSucceeded = true;
+//			recordSuccess(target);
+//			guessWasCorrect = lowball;
+//			_estimate = lowball? _estimate : _estimate * (1+_uncertainty);
+//		}
+//		if (_recentPeak == _maxPeak) {
+//			if (under <= _maxPeak && _maxPeak <= over)
+//				_maxPeakUncertainty = Math.min(_maxPeakUncertainty, _uncertainty);
+//		}
+//		if (!runSucceeded && target < _recentPeak)
+//			_recentPeak = Float.NEGATIVE_INFINITY;
+//		float oldUncertainty = _uncertainty;
+//		if (runSucceeded && target >= Float.POSITIVE_INFINITY) {
+//			// lowball guess or not, if we thought it was infinitely fast and the
+//			// runSucceeded, we were right.  Otherwise, we may never terminate,
+//			// always attempting to increase the already-infinite target score ever higher.
+//			guessWasCorrect = true;
+//		}
+//		if (newEstimateWasSpecified) {
+//			float impliedUncertainty = Math.abs(oldEstimate - result) / target;
+//			if (impliedUncertainty > _uncertainty) {
+//				if (TAME_UNCERTAINTY) {
+//					// If the estimate was way off, just bump up the _uncertainty as though our guess was incorrect
+//					_uncertainty *= INCORRECT_GUESS_ADJUSTMENT;
+//				} else {
+//					_uncertainty = impliedUncertainty;
+//				}
+//			} else {
+//				_uncertainty *= guessWasCorrect? CORRECT_GUESS_ADJUSTMENT : INCORRECT_GUESS_ADJUSTMENT;
+//			}
+//		} else {
+//			_uncertainty *= guessWasCorrect? CORRECT_GUESS_ADJUSTMENT : INCORRECT_GUESS_ADJUSTMENT;
+//		}
+//		_uncertainty = Math.min(_uncertainty, MAX_UNCERTAINTY);
+//		report(target, result, oldUncertainty, lowball, guessWasCorrect, runSucceeded);
+//		return guessWasCorrect;
+		return true;
 	}
 
 	final void recordSuccess(float target) {
@@ -231,34 +232,36 @@ public abstract class BumbleBench extends Util implements Runnable {
 			long startTime = System.currentTimeMillis();
 			long minEndTime = startTime + 1000 * MIN_WARMUP_SECONDS;
 			long maxEndTime = startTime + 1000 * MAX_WARMUP_SECONDS;
-			if (DEBUG) debug("Starting warmup");
-			while (true) {
-				long currentTime = System.currentTimeMillis();
-				if (currentTime > maxEndTime)
-					break;
-				else if (currentTime > minEndTime && _uncertainty <= WARMUP_TARGET_UNCERTAINTY)
-					break;
-				else if (_estimate >= Float.POSITIVE_INFINITY)
-					break;
-
-				if (DEBUG) debug("Warmup: runAttempt(HIGHBALL)...");
-				while (!runAttempt(HIGHBALL)) { if (currentTime > maxEndTime) break; }
-				if (DEBUG) debug("Warmup: runAttempt(LOWBALL)...");
-				while (!runAttempt(LOWBALL))  { if (currentTime > maxEndTime) break; }
-			}
-			if (DEBUG) debug("...Warmup completed: "+((System.currentTimeMillis()-startTime)/1000)+" seconds.");
-			out().println("   -- ballpark --");
-			for (int i = 0; i < BALLPARK_ITERATIONS; i+=2) {
-				while (!runAttempt(HIGHBALL)){}
-				while (!runAttempt(LOWBALL)){}
-			}
-			out().println("   -- finale --");
-			_maxPeak = _recentPeak;
-			_maxPeakUncertainty = Float.POSITIVE_INFINITY;
-			for (int i = 0; i < FINALE_ITERATIONS; i+=2) {
-				while (!runAttempt(HIGHBALL)){}
-				while (!runAttempt(LOWBALL)){}
-			}
+//			if (DEBUG) debug("Starting warmup");
+//			while (true) {
+//				long currentTime = System.currentTimeMillis();
+//				if (currentTime > maxEndTime)
+//					break;
+//				else if (currentTime > minEndTime && _uncertainty <= WARMUP_TARGET_UNCERTAINTY)
+//					break;
+//				else if (_estimate >= Float.POSITIVE_INFINITY)
+//					break;
+//
+//				if (DEBUG) debug("Warmup: runAttempt(HIGHBALL)...");
+//				while (!runAttempt(HIGHBALL)) { if (currentTime > maxEndTime) break; }
+//				if (DEBUG) debug("Warmup: runAttempt(LOWBALL)...");
+//				while (!runAttempt(LOWBALL))  { if (currentTime > maxEndTime) break; }
+//			}
+//			if (DEBUG) debug("...Warmup completed: "+((System.currentTimeMillis()-startTime)/1000)+" seconds.");
+//			out().println("   -- ballpark --");
+//			for (int i = 0; i < BALLPARK_ITERATIONS; i+=2) {
+//				while (!runAttempt(HIGHBALL)){}
+//				while (!runAttempt(LOWBALL)){}
+//			}
+//			out().println("   -- finale --");
+//			_maxPeak = _recentPeak;
+//			_maxPeakUncertainty = Float.POSITIVE_INFINITY;
+//			for (int i = 0; i < FINALE_ITERATIONS; i+=2) {
+//				while (!runAttempt(HIGHBALL)){}
+//				while (!runAttempt(LOWBALL)){}
+//			}
+			runAttempt(HIGHBALL);
+			System.exit(0);
 		} catch (InterruptedException e) {
 			out().println("   -- interrupted: " + e.getMessage() + " --");
 		}

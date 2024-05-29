@@ -7,7 +7,6 @@ import shutil
 from datetime import datetime
 import config_comparer
 
-
 def remove_empty_strings(lst) -> list:
     new_list = []
     for i in lst:
@@ -15,8 +14,7 @@ def remove_empty_strings(lst) -> list:
             new_list.append(i)
     return new_list
 
-
-def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver) -> None:
+def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver) -> str:
 
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
@@ -57,6 +55,8 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
         client_process = subprocess.Popen(command_splt, cwd=bumblebench_jitserver_path,stdout=f)
         client_process.wait()
         f.close()
+
+    return log_directory
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

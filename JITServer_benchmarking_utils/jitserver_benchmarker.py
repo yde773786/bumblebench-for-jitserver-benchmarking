@@ -1,12 +1,19 @@
 import subprocess
 from compiler_config import get_compiler_args
 from kernel_config import setup_kernel_args
-import os
 import argparse
 from pathlib import Path
 import shutil
 from datetime import datetime
 import config_comparer
+
+
+def remove_empty_strings(lst) -> list:
+    new_list = []
+    for i in lst:
+        if i.strip() != "":
+            new_list.append(i)
+    return new_list
 
 
 def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver) -> None:
@@ -35,11 +42,21 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
     shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
 
     if loud_output:
-        command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver"
-        subprocess.call(command, shell=True)
+        command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+        command = command.replace("'","")
+        command_splt = command.split(" ")
+        command_splt = remove_empty_strings(command_splt)
+        client_process = subprocess.Popen(command_splt, cwd=bumblebench_jitserver_path)
+        client_process.wait()
     else:
-        command = f"{openj9_path} -jar {xjit_flags} {xaot_flags} {other_flags} {bumblebench_jitserver_path}/BumbleBench.jar JITserver > {sp_directory}/output_file.{now}"
-        subprocess.call(command, shell=True)
+        f = open(f'{sp_directory}/output_file.{now}', "w")
+        command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+        command = command.replace("'","")
+        command_splt = command.split(" ")
+        command_splt = remove_empty_strings(command_splt)
+        client_process = subprocess.Popen(command_splt, cwd=bumblebench_jitserver_path,stdout=f)
+        client_process.wait()
+        f.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

@@ -1,18 +1,26 @@
 import argparse
 import os
 import subprocess
+import datetime as Date
+import subprocess
 from jitserver_benchmarker import main_function
 
-def wait_for_server(splt):
-    proc = subprocess.Popen(splt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    for line in proc.stdout:
-        strip = line.strip()
-        if strip == "JITServer is ready to accept incoming requests":
+def wait_for_server(cmd):
+    TIMEOUT = 10
+    current_time = Date.datetime.now()
+
+    # Use exec to ensure the process is killed if the script is killed
+    proc = subprocess.Popen('exec ' + cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True)
+
+    while True:
+        line = proc.stdout.readline().strip()
+        if line:
+            print(line)
+        if line == "JITServer is ready to accept incoming requests":
             return proc
-#     if Date.datetime.now() - current_time > Date.timedelta(seconds=TIMEOUT):
-#                 proc.kill()  # Ensure the process is killed if it times out
-#                 raise TimeoutError("JITServer did not start in time")
-import time
+        if Date.datetime.now() - current_time > Date.timedelta(seconds=TIMEOUT):
+            proc.kill()  # Ensure the process is killed if it times out
+            raise TimeoutError("JITServer did not start in time")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -28,6 +36,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-nsp', '--normal_server_path', required=True)
     parser.add_argument('-csp', '--changed_server_path', required=True)
+
 
     args = vars(parser.parse_args())
 
@@ -46,34 +55,29 @@ if __name__ == "__main__":
 
     get_dir = ''
     for i in range(int(num_runs) * 2):
-
         if i % 2 == 0:
             print(f"Normal JITServer run {i}")
+
             cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
-            splt = cmd.split(" ")
-            proc = wait_for_server(splt)
-            main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output,
-                          False)
+            proc = wait_for_server(cmd)
+            main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
             proc.kill()
-            print("killed the process")
-            proc.wait()
+
             print(f"Normal JITServer run {i} done")
         else:
             print(f"Changed JITServer run {i}")
+
             cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
-            splt = cmd.split(" ")
             print("command: " + cmd)
-            proc = wait_for_server(splt)
-            get_dir = main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output,
-                          True)
-
+            proc = wait_for_server(cmd)
+            get_dir = main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
             proc.kill()
+
             print(f"Changed JITServer run {i} done")
-            proc.wait()
 
 
-# Do a final analysis of the results
+    # Do a final analysis of the results
     print("_________________Final analysis of results_________________")
     print("Normal server results:")
 

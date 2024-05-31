@@ -9,7 +9,9 @@ def wait_for_server(splt):
         strip = line.strip()
         if strip == "JITServer is ready to accept incoming requests":
             return proc
-
+#     if Date.datetime.now() - current_time > Date.timedelta(seconds=TIMEOUT):
+#                 proc.kill()  # Ensure the process is killed if it times out
+#                 raise TimeoutError("JITServer did not start in time")
 import time
 
 if __name__ == "__main__":
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     for i in range(int(num_runs) * 2):
 
         if i % 2 == 0:
-            print("starting up normal jitserver")
+            print(f"Normal JITServer run {i}")
             cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             splt = cmd.split(" ")
@@ -56,8 +58,9 @@ if __name__ == "__main__":
             proc.kill()
             print("killed the process")
             proc.wait()
+            print(f"Normal JITServer run {i} done")
         else:
-            print("starting up altered jitserver")
+            print(f"Changed JITServer run {i}")
             cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             splt = cmd.split(" ")
             print("command: " + cmd)
@@ -66,7 +69,7 @@ if __name__ == "__main__":
                           True)
 
             proc.kill()
-            print("killed the process")
+            print(f"Changed JITServer run {i} done")
             proc.wait()
 
 

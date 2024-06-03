@@ -44,16 +44,18 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
         command = command.replace("'","")
         command_splt = command.split(" ")
         command_splt = remove_empty_strings(command_splt)
-        client_process = subprocess.Popen(command_splt, cwd=bumblebench_jitserver_path)
+        client_process = subprocess.Popen(command_splt)
         client_process.wait()
+        shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     else:
         f = open(f'{sp_directory}/output_file.{now}', "w")
         command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
         command = command.replace("'","")
         command_splt = command.split(" ")
         command_splt = remove_empty_strings(command_splt)
-        client_process = subprocess.Popen(command_splt, cwd=bumblebench_jitserver_path,stdout=f)
+        client_process = subprocess.Popen(command_splt,stdout=f)
         client_process.wait()
+        shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         f.close()
 
     return log_directory

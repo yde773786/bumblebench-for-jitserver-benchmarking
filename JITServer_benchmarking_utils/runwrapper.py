@@ -8,11 +8,13 @@ def wait_for_server(cmd):
     TIMEOUT = 10
     current_time = Date.datetime.now()
 
-    # Use exec to ensure the process is killed if the script is killed
-    proc = subprocess.Popen('exec ' + cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True)
+    server_vlog_file = open("servervlog.txt", "w")
 
+    # Use exec to ensure the process is killed if the script is killed
+    proc = subprocess.Popen('exec ' + cmd, stdout=server_vlog_file, stderr=subprocess.STDOUT, text=True, shell=True)
+    server_read = open("servervlog.txt", "r")
     while True:
-        line = proc.stdout.readline().strip()
+        line = server_read.readline().strip()
         if line:
             print(line)
         if line == "JITServer is ready to accept incoming requests":
@@ -33,9 +35,6 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
-    # parser.add_argument('-nsp', '--normal_server_path', required=True)
-    # parser.add_argument('-ch', '--changed_server', action='store_true')
-    # parser.add_argument('-csp', '--changed_server_path', required=True)
 
 
     args = vars(parser.parse_args())
@@ -121,3 +120,5 @@ if __name__ == "__main__":
 
     for i in range(len(normal_report)):
         report_file.write(f"{i+1},{normal_report[i]},{altered_report[i]}\n")
+
+    os.system('rm servervlog.txt')

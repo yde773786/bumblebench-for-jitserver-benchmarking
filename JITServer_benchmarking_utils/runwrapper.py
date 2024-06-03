@@ -1,6 +1,5 @@
 import argparse
 import os
-import subprocess
 import datetime as Date
 import subprocess
 from jitserver_benchmarker import main_function
@@ -34,8 +33,9 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
-    parser.add_argument('-nsp', '--normal_server_path', required=True)
-    parser.add_argument('-csp', '--changed_server_path', required=True)
+    # parser.add_argument('-nsp', '--normal_server_path', required=True)
+    parser.add_argument('-ch', '--changed_server', action='store_true')
+    # parser.add_argument('-csp', '--changed_server_path', required=True)
 
 
     args = vars(parser.parse_args())
@@ -46,8 +46,10 @@ if __name__ == "__main__":
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
     num_runs = args['number_of_runs']
-    normal_server_path = args['normal_server_path']
-    changed_server_path = args['changed_server_path']
+    server_path = openj9_path + "/jitserver"
+    openj9_path = openj9_path + "/java"
+    #normal_server_path = args['normal_server_path']
+    # changed_server_path = args['changed_server_path']
     cmd = ''
 
     # Run the normal server and the changed server in parallel
@@ -57,8 +59,8 @@ if __name__ == "__main__":
     for i in range(int(num_runs) * 2):
         if i % 2 == 0:
             print(f"Normal JITServer run {i}")
-
-            cmd = f'{normal_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            os.environ['IsRandomJitServer'] = 'false'
+            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             proc = wait_for_server(cmd)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
@@ -67,8 +69,8 @@ if __name__ == "__main__":
             print(f"Normal JITServer run {i} done")
         else:
             print(f"Changed JITServer run {i}")
-
-            cmd = f'{changed_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            os.environ['IsRandomJitServer'] = 'true'
+            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
             print("command: " + cmd)
             proc = wait_for_server(cmd)
             get_dir = main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)

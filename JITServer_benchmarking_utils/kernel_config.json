@@ -2,14 +2,7 @@
     "threads": [
         {
             "kernels": [
-                {"kernel_name": "TrigBench", "invoc_count": 4},
-                {"kernel_name": "TardyBench", "invoc_count": 3}
-            ]
-        },
-        {
-            "kernels": [
-                {"kernel_name": "TrigBench", "invoc_count": 2},
-                {"kernel_name": "TardyBench", "invoc_count": 1}
+                {"kernel_name": "TrigBench", "invoc_count": 10}
             ]
         }
     ]

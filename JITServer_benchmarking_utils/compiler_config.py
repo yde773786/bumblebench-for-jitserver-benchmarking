@@ -1,7 +1,7 @@
 import json
 
 
-def get_compiler_args(json_file, log_directory):
+def get_compiler_args(json_file, sp_directory):
     config = json.load(open(json_file, 'r'))
 
     xjit_flags = '-Xjit:'
@@ -23,9 +23,9 @@ def get_compiler_args(json_file, log_directory):
                     xjit_flags += ")',"
             elif strings[1] == "log_file":
                 if xjit_flags.find("verbose") == -1:
-                    xjit_flags += "verbose,vlog" + '=' + log_directory + "/" + str(config[key]) + ","
+                    xjit_flags += "verbose,vlog" + '=' + sp_directory + "/" + str(config[key]) + ","
                 else:
-                    xjit_flags += "vlog" + '=' + log_directory + "/" + str(config[key]) + ","
+                    xjit_flags += "vlog" + '=' + sp_directory + "/" + str(config[key]) + ","
             elif strings[1] == "enable_JIT":
                 if not config[key]:
                     other_flags += "-Xnojit "
@@ -34,7 +34,7 @@ def get_compiler_args(json_file, log_directory):
                     if xjit_flags.find("verbose") == -1:
                         xjit_flags += "verbose,"
 
-                    xjit_flags = xjit_flags.replace("verbose", "verbose=\\{JITServer\\}")
+                    xjit_flags = xjit_flags.replace("verbose", "verbose={JITServer}")
         elif key.startswith("AOT"):
             strings = key.split(":")
             strings[1] = strings[1].strip()

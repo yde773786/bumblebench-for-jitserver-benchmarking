@@ -35,6 +35,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
+    parser.add_argument('-m', '--number_of_clients', required=True)
 
 
     args = vars(parser.parse_args())
@@ -45,10 +46,9 @@ if __name__ == "__main__":
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
     num_runs = args['number_of_runs']
+    num_clients = args['number_of_clients']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
-    #normal_server_path = args['normal_server_path']
-    # changed_server_path = args['changed_server_path']
     cmd = ''
 
     # Run the normal server and the changed server in parallel
@@ -79,46 +79,18 @@ if __name__ == "__main__":
 
 
     # Do a final analysis of the results
-    print("_________________Final analysis of results_________________")
+    print(f'Final analysis of results in {get_dir + "/report.csv"}')
+
     print("Normal server results:")
 
     report_file = open(get_dir + '/report.csv', 'w')
-    report_file.write("Run,Normal Server Time,Changed Server Time\n")
+    report_file.write("Run, Client, FCFS Elapsed Time, Random Elapsed Time\n")
 
-    files = [f for f in os.listdir(get_dir + '/normal_server/') if 'output_file' in f]
-    files.sort(key=lambda x: os.path.getmtime(get_dir + '/normal_server/' + x))
-    avg_normal = 0
+    for i in range(int(num_runs)):
+        for j in range(int(num_clients)):
+            normal_file = open(get_dir + f'/normal_server/{i}/{j}/output.txt', 'r')
+            changed_file = open(get_dir + f'/altered_server/{i}/{j}/output.txt', 'r')
 
-    normal_report = []
+            report_file.write(f"{i+1},{j+1},{normal_file.readlines()[-2].split()[4]},{changed_file.readlines()[-2].split()[4]}\n")
 
-    for i, f in enumerate(files):
-        elapsedTime = open(get_dir + '/normal_server/' + f, 'r').readlines()[-2].split()[4]
-        print(f"Run {i+1} Elapsed Time: {elapsedTime}")
-        avg_normal += int(elapsedTime)
-        normal_report.append(elapsedTime)
-
-    avg_normal /= len(files)
-
-    print("AVERAGE ELAPSED TIME FOR NORMAL SERVER: " + str(avg_normal))
-
-    print("Changed server results:")
-
-    altered_report = []
-
-    files = [f for f in os.listdir(get_dir + '/altered_server/') if 'output_file' in f]
-    files.sort(key=lambda x: os.path.getmtime(get_dir + '/altered_server/' + x))
-    avg_changed = 0
-    for i, f in enumerate(files):
-        elapsedTime = open(get_dir + '/altered_server/' + f, 'r').readlines()[-2].split()[4]
-        print(f"Run {i+1} Elapsed Time: {elapsedTime}")
-        avg_changed += int(elapsedTime)
-        altered_report.append(elapsedTime)
-
-    avg_changed /= len(files)
-
-    print("AVERAGE ELAPSED TIME FOR CHANGED SERVER: " + str(avg_changed))
-
-    for i in range(len(normal_report)):
-        report_file.write(f"{i+1},{normal_report[i]},{altered_report[i]}\n")
-
-    os.system('rm servervlog.txt')
+    report_file.close()

@@ -35,12 +35,15 @@ def get_compiler_args(json_file, sp_directory):
                         xjit_flags += "verbose,"
 
                     xjit_flags = xjit_flags.replace("verbose", "verbose={JITServer}")
+            elif strings[1] == "active_thread_heuristic":     
+                if not config[key]:
+                    xjit_flags += "highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000"   
         elif key.startswith("AOT"):
             strings = key.split(":")
             strings[1] = strings[1].strip()
             if strings[1] == "enable_AOT":
                 if not config[key]:
-                    xaot_flags = "-Xnoaot"
+                    xaot_flags = "-Xnoaot -Xshareclasses:none"
             if xaot_flags != "-Xnoaot":
                 if strings[1] == "AOT_count":
                     xaot_flags += "count" + '=' + str(config[key]) + ","

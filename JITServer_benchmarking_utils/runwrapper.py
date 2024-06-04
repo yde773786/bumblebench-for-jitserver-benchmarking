@@ -59,7 +59,7 @@ if __name__ == "__main__":
         if i % 2 == 0:
             print(f"Normal JITServer run {i}")
             os.environ['IsRandomJitServer'] = 'false'
-            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
             print("command: " + cmd)
             proc = wait_for_server(cmd)
             main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         else:
             print(f"Changed JITServer run {i}")
             os.environ['IsRandomJitServer'] = 'true'
-            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}}'
+            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
             print("command: " + cmd)
             proc = wait_for_server(cmd)
             get_dir = main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)

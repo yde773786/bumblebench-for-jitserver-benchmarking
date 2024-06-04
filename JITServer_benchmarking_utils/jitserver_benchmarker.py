@@ -41,6 +41,7 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
 
     if loud_output:
         command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+        print(command)
         command = command.replace("'","")
         command_splt = command.split(" ")
         command_splt = remove_empty_strings(command_splt)
@@ -50,6 +51,7 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
     else:
         f = open(f'{sp_directory}/output_file.{now}', "w")
         command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+        print(command)
         command = command.replace("'","")
         command_splt = command.split(" ")
         command_splt = remove_empty_strings(command_splt)

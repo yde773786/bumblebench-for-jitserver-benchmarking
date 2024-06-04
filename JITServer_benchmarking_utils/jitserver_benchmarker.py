@@ -1,5 +1,5 @@
 import subprocess
-from compiler_config import get_compiler_args
+from compiler_config import get_compiler_args, change_vlog_directory
 from kernel_config import setup_kernel_args
 import argparse
 from pathlib import Path
@@ -50,7 +50,9 @@ def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_pa
     else:
         for i in range(num_clients):
             client_directory = f'{sp_directory}/client_{i}'
-            xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, client_directory)
+
+            xjit_flags = change_vlog_directory(xjit_flags, client_directory)
+
             Path(client_directory).mkdir(parents=True, exist_ok=True)
 
             f = open(f'{client_directory}/output_file.txt', "w")

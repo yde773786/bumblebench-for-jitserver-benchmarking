@@ -55,13 +55,14 @@ def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_pa
 
             Path(client_directory).mkdir(parents=True, exist_ok=True)
 
+            f_err = open(f'{client_directory}/error_file.txt', "w")
             f = open(f'{client_directory}/output_file.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             print(command)
             command = command.replace("'","")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)
-            client_process = subprocess.Popen(command_splt, stdout=f)
+            client_process = subprocess.Popen(command_splt, stdout=f, stderr=f_err)
             clients.append(client_process)
         for client in clients:
             client.wait()

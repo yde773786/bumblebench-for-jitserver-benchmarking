@@ -88,8 +88,8 @@ if __name__ == "__main__":
 
     for i in range(int(num_runs)):
         for j in range(int(num_clients)):
-            normal_file = open(get_dir + f'/normal_server/{i}/{j}/output.txt', 'r')
-            changed_file = open(get_dir + f'/altered_server/{i}/{j}/output.txt', 'r')
+            normal_file = open(get_dir + f'/normal_server/run_{i}/client_{j}/output.txt', 'r')
+            changed_file = open(get_dir + f'/altered_server/run_{i}/client_{j}/output.txt', 'r')
 
             report_file.write(f"{i+1},{j+1},{normal_file.readlines()[-2].split()[4]},{changed_file.readlines()[-2].split()[4]}\n")
 

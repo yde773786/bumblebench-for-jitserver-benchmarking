@@ -14,23 +14,19 @@ def remove_empty_strings(lst) -> list:
             new_list.append(i)
     return new_list
 
-def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver) -> str:
-
-    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
-    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
-    log_hash = compiler_hash + kernel_hash
-    log_directory = config_comparer.create_hash_from_str(log_hash)
+def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver, num_clients, run) -> str:
+    clients = []
     sp_directory = log_directory
-
-    Path(log_directory).mkdir(parents=True, exist_ok=True)
-
     if altered_JITserver:
         sp_directory += "/altered_server"
     else:
         sp_directory += "/normal_server"
 
+    sp_directory += f'/run_{run}'
+
     Path(sp_directory).mkdir(parents=True, exist_ok=True)
 
+    print(compiler_json_file)
     xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, sp_directory)
     setup_kernel_args(kernel_json_file)
 
@@ -40,23 +36,33 @@ def main_function(compiler_json_file, kernel_json_file, openj9_path, bumblebench
     shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
 
     if loud_output:
-        command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-        print(command)
-        command = command.replace("'","")
-        command_splt = command.split(" ")
-        command_splt = remove_empty_strings(command_splt)
-        client_process = subprocess.Popen(command_splt)
-        client_process.wait()
+        for i in range(num_clients):
+            command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+            print(command)
+            command = command.replace("'","")
+            command_splt = command.split(" ")
+            command_splt = remove_empty_strings(command_splt)
+            client_process = subprocess.Popen(command_splt)
+            clients.append(client_process)
+        for client in clients:
+            client.wait()
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     else:
-        f = open(f'{sp_directory}/output_file.{now}', "w")
-        command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-        print(command)
-        command = command.replace("'","")
-        command_splt = command.split(" ")
-        command_splt = remove_empty_strings(command_splt)
-        client_process = subprocess.Popen(command_splt,stdout=f)
-        client_process.wait()
+        for i in range(num_clients):
+            client_directory = f'{sp_directory}/client_{i}'
+            xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, client_directory)
+            Path(client_directory).mkdir(parents=True, exist_ok=True)
+
+            f = open(f'{client_directory}/output_file.txt', "w")
+            command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+            print(command)
+            command = command.replace("'","")
+            command_splt = command.split(" ")
+            command_splt = remove_empty_strings(command_splt)
+            client_process = subprocess.Popen(command_splt, stdout=f)
+            clients.append(client_process)
+        for client in clients:
+            client.wait()
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         f.close()
 
@@ -81,4 +87,12 @@ if __name__ == "__main__":
     openj9_path = args['openj9_path']
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
-    main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output, False)
+
+    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
+    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
+    log_hash = compiler_hash + kernel_hash
+    log_directory = config_comparer.create_hash_from_str(log_hash)
+
+    Path(log_directory).mkdir(parents=True, exist_ok=True)
+    
+    main_function(log_directory, compiler_json_file, kernel_json_file, openj9_path,bumblebench_jitserver_path,loud_output, False, 1, 1)

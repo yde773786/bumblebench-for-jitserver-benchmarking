@@ -1,6 +1,8 @@
 import json
 
-
+# def change_vlog_directory(xjit_flags, directory):
+#     xjit_flags = xjit_flags.replace("vlog=", "verbose={JITServer}")
+#
 def get_compiler_args(json_file, sp_directory):
     config = json.load(open(json_file, 'r'))
 

@@ -32,8 +32,6 @@ if __name__ == "__main__":
         prog='runwrapper',
         description="A Script that takes in a configuration of kernels and uses BumbleBench for JITServer to benchmark"
     )
-    num = random.randint(0, 10000000)
-    os.environ['TR_Seed'] = str(num)
 
     parser.add_argument('-o', '--openj9_path', required=True)
     parser.add_argument('-c', '--compiler_configuration', required=True)
@@ -69,6 +67,9 @@ if __name__ == "__main__":
 
     get_dir = ''
     for i in range(int(num_runs)):
+        num = random.randint(0, 10000000)
+        os.environ['TR_Seed'] = str(num)
+
         print(f"Normal JITServer run {i}")
         os.environ['IsRandomJitServer'] = 'false'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'

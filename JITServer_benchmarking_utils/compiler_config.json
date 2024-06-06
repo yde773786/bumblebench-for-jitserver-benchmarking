@@ -1,5 +1,5 @@
 {
-    "JIT: global_invocation_count_till_compiled": 5,
+    "JIT: global_invocation_count_till_compiled": 4000,
     "JIT: log_file": "vlog_file",
     "JIT: enable_JIT": true,
     "JIT: JIT_server_log": false,

@@ -2,6 +2,9 @@ import argparse
 import os
 import datetime as Date
 import subprocess
+from pathlib import Path
+
+import config_comparer
 from jitserver_benchmarker import main_function
 
 def wait_for_server(cmd):
@@ -35,6 +38,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
+    parser.add_argument('-m', '--number_of_clients', required=True)
 
 
     args = vars(parser.parse_args())
@@ -45,80 +49,70 @@ if __name__ == "__main__":
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
     num_runs = args['number_of_runs']
+    num_clients = args['number_of_clients']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
-    #normal_server_path = args['normal_server_path']
-    # changed_server_path = args['changed_server_path']
     cmd = ''
+
+    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
+    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
+    log_hash = compiler_hash + kernel_hash
+    log_directory = config_comparer.create_hash_from_str(log_hash)
+
+    Path(log_directory).mkdir(parents=True, exist_ok=True)
 
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
 
     get_dir = ''
-    for i in range(int(num_runs) * 2):
-        if i % 2 == 0:
-            print(f"Normal JITServer run {i}")
-            os.environ['IsRandomJitServer'] = 'false'
-            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
-            print("command: " + cmd)
-            proc = wait_for_server(cmd)
-            main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False)
-            proc.kill()
+    for i in range(int(num_runs)):
+        print(f"Normal JITServer run {i}")
+        os.environ['IsRandomJitServer'] = 'false'
+        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        print("command: " + cmd)
+        proc = wait_for_server(cmd)
+        main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False, int(num_clients), i)
+        proc.kill()
 
-            print(f"Normal JITServer run {i} done")
-        else:
-            print(f"Changed JITServer run {i}")
-            os.environ['IsRandomJitServer'] = 'true'
-            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
-            print("command: " + cmd)
-            proc = wait_for_server(cmd)
-            get_dir = main_function(compiler_json_file,kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True)
-            proc.kill()
+        print(f"Normal JITServer run {i} done")
 
-            print(f"Changed JITServer run {i} done")
+        print(f"Changed JITServer run {i}")
+        os.environ['IsRandomJitServer'] = 'true'
+        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        print("command: " + cmd)
+        proc = wait_for_server(cmd)
+        get_dir = main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True, int(num_clients), i)
+        proc.kill()
+
+        print(f"Changed JITServer run {i} done")
 
 
     # Do a final analysis of the results
-    print("_________________Final analysis of results_________________")
+    print(f'Final analysis of results in {get_dir + "/report.csv"}')
+
     print("Normal server results:")
 
-    report_file = open(get_dir + '/report.csv', 'w')
-    report_file.write("Run,Normal Server Time,Changed Server Time\n")
+    per_client_report_file = open(get_dir + '/report_per_client.csv', 'w')
+    per_run_report_file = open(get_dir + '/report_per_run.csv', 'w')
+    per_client_report_file.write("Run, Client, FCFS Elapsed Time (s), Random Elapsed Time (s)\n")
+    per_run_report_file.write("Run, Max FCFS Elapsed Time (s), Max Random Elapsed Time (s), Min FCFS Elapsed Time (s), Min Random Elapsed Time (s), Average FCFS Elapsed Time (s), Average Random Elapsed Time (s)\n")
 
-    files = [f for f in os.listdir(get_dir + '/normal_server/') if 'output_file' in f]
-    files.sort(key=lambda x: os.path.getmtime(get_dir + '/normal_server/' + x))
-    avg_normal = 0
+    for i in range(int(num_runs)):
+        fcfs_elapsed_times = []
+        random_elapsed_times = []
 
-    normal_report = []
+        for j in range(int(num_clients)):
+            normal_file = open(get_dir + f'/normal_server/run_{i}/client_{j}/output_file.txt', 'r')
+            changed_file = open(get_dir + f'/altered_server/run_{i}/client_{j}/output_file.txt', 'r')
 
-    for i, f in enumerate(files):
-        elapsedTime = open(get_dir + '/normal_server/' + f, 'r').readlines()[-2].split()[4]
-        print(f"Run {i+1} Elapsed Time: {elapsedTime}")
-        avg_normal += int(elapsedTime)
-        normal_report.append(elapsedTime)
+            normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+            changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
 
-    avg_normal /= len(files)
+            per_client_report_file.write(f"{i+2},{j+1},{normal_elapsed_time},{changed_elapsed_time}\n")
+            fcfs_elapsed_times.append(normal_elapsed_time)
+            random_elapsed_times.append(changed_elapsed_time)
 
-    print("AVERAGE ELAPSED TIME FOR NORMAL SERVER: " + str(avg_normal))
+        per_run_report_file.write(f'{i+1},{max(fcfs_elapsed_times)},{max(random_elapsed_times)},{min(fcfs_elapsed_times)}, {min(random_elapsed_times)},{sum(fcfs_elapsed_times)/len(fcfs_elapsed_times)},{sum(random_elapsed_times)/len(random_elapsed_times)}\n')
 
-    print("Changed server results:")
-
-    altered_report = []
-
-    files = [f for f in os.listdir(get_dir + '/altered_server/') if 'output_file' in f]
-    files.sort(key=lambda x: os.path.getmtime(get_dir + '/altered_server/' + x))
-    avg_changed = 0
-    for i, f in enumerate(files):
-        elapsedTime = open(get_dir + '/altered_server/' + f, 'r').readlines()[-2].split()[4]
-        print(f"Run {i+1} Elapsed Time: {elapsedTime}")
-        avg_changed += int(elapsedTime)
-        altered_report.append(elapsedTime)
-
-    avg_changed /= len(files)
-
-    print("AVERAGE ELAPSED TIME FOR CHANGED SERVER: " + str(avg_changed))
-
-    for i in range(len(normal_report)):
-        report_file.write(f"{i+1},{normal_report[i]},{altered_report[i]}\n")
-
-    os.system('rm servervlog.txt')
+    per_client_report_file.close()
+    per_run_report_file.close()

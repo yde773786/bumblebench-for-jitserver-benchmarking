@@ -1,6 +1,10 @@
 import json
+import re
 
 
+def change_vlog_directory(xjit_flags, directory):
+    xjit_flags = re.sub("vlog=[0-9A-Za-z_/]*/", f'vlog={directory}/', xjit_flags)
+    return xjit_flags
 def get_compiler_args(json_file, sp_directory):
     config = json.load(open(json_file, 'r'))
 

@@ -80,6 +80,7 @@ if __name__ == "__main__":
 
         print(f"Normal JITServer run {i} done")
 
+        os.environ['TR_Seed'] = str(num)
         print(f"Changed JITServer run {i}")
         os.environ['IsRandomJitServer'] = 'true'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'

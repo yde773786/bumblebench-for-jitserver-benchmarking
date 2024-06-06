@@ -1,6 +1,7 @@
 import argparse
 import os
 import datetime as Date
+import random
 import subprocess
 from pathlib import Path
 
@@ -31,6 +32,8 @@ if __name__ == "__main__":
         prog='runwrapper',
         description="A Script that takes in a configuration of kernels and uses BumbleBench for JITServer to benchmark"
     )
+    num = random.randint(0, 10000000)
+    os.environ['TR_Seed'] = str(num)
 
     parser.add_argument('-o', '--openj9_path', required=True)
     parser.add_argument('-c', '--compiler_configuration', required=True)

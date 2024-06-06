@@ -2,32 +2,32 @@
     "threads": [
         {
             "kernels": [
-                {"kernel_name": "HashMapForEachBiConsumerFinalBench", "invoc_count": 101},
-                {"kernel_name": "RSABench", "invoc_count": 101}
+                {"kernel_name": "HashMapForEachBiConsumerFinalBench", "invoc_count": 5101},
+                {"kernel_name": "RSABench", "invoc_count": 5101}
             ]
         },
         {
             "kernels": [
-                {"kernel_name": "TrigBench", "invoc_count": 101},
-                {"kernel_name": "ArrayListForEachConsumerFinalBench", "invoc_count": 101}
+                {"kernel_name": "TrigBench", "invoc_count": 5101},
+                {"kernel_name": "ArrayListForEachConsumerFinalBench", "invoc_count": 5101}
             ]
         },
         {
             "kernels": [
-                {"kernel_name": "TrigBench", "invoc_count": 102},
-                {"kernel_name": "ArrayListForEachConsumerFinalBench", "invoc_count": 101}
+                {"kernel_name": "TrigBench", "invoc_count": 5102},
+                {"kernel_name": "ArrayListForEachConsumerFinalBench", "invoc_count": 5101}
             ]
         },
         {
             "kernels": [
-                {"kernel_name": "LambdaBench", "invoc_count": 101},
-                {"kernel_name": "LambdaBench", "invoc_count": 101}
+                {"kernel_name": "LambdaBench", "invoc_count": 5101},
+                {"kernel_name": "LambdaBench", "invoc_count": 5101}
             ]
         },
         {
             "kernels": [
-                {"kernel_name": "LambdaBench", "invoc_count": 100},
-                {"kernel_name": "LambdaBench", "invoc_count": 100}
+                {"kernel_name": "LambdaBench", "invoc_count": 5100},
+                {"kernel_name": "LambdaBench", "invoc_count": 5100}
             ]
         }
     ]

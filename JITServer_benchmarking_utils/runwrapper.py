@@ -1,6 +1,7 @@
 import argparse
 import os
 import datetime as Date
+import random
 import subprocess
 from pathlib import Path
 
@@ -66,6 +67,9 @@ if __name__ == "__main__":
 
     get_dir = ''
     for i in range(int(num_runs)):
+        num = random.randint(0, 10000000)
+        os.environ['TR_Seed'] = str(num)
+
         print(f"Normal JITServer run {i}")
         os.environ['IsRandomJitServer'] = 'false'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
@@ -76,6 +80,7 @@ if __name__ == "__main__":
 
         print(f"Normal JITServer run {i} done")
 
+        os.environ['TR_Seed'] = str(num)
         print(f"Changed JITServer run {i}")
         os.environ['IsRandomJitServer'] = 'true'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'

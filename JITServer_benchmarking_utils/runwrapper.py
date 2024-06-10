@@ -9,7 +9,7 @@ import config_comparer
 from jitserver_benchmarker import main_function
 
 def wait_for_server(cmd):
-    TIMEOUT = 10
+    TIMEOUT = 20
     current_time = Date.datetime.now()
 
     server_vlog_file = open("servervlog.txt", "w")
@@ -55,12 +55,21 @@ if __name__ == "__main__":
     openj9_path = openj9_path + "/java"
     cmd = ''
 
-    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
-    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
+    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
+    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
-    log_directory = config_comparer.create_hash_from_str(log_hash)
+    log_hash_plus_info = log_hash + str(num_runs) + str(num_clients)
+    log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
 
     Path(log_directory).mkdir(parents=True, exist_ok=True)
+
+    cmd_options = open(f'{log_directory}/command_line_options.txt', "w")
+    cmd_options.write(f'number of runs: {num_runs}\n')
+    cmd_options.write(f'number of clients: {num_clients}\n')
+    cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
+    cmd_options.close()
+
+
 
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
@@ -73,7 +82,7 @@ if __name__ == "__main__":
         print(f"Normal JITServer run {i}")
         os.environ['IsRandomJitServer'] = 'false'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
-        print("command: " + cmd)
+        print("server command: " + cmd)
         proc = wait_for_server(cmd)
         main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False, int(num_clients), i)
         proc.kill()
@@ -84,7 +93,7 @@ if __name__ == "__main__":
         print(f"Changed JITServer run {i}")
         os.environ['IsRandomJitServer'] = 'true'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
-        print("command: " + cmd)
+        print("server command: " + cmd)
         proc = wait_for_server(cmd)
         get_dir = main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True, int(num_clients), i)
         proc.kill()

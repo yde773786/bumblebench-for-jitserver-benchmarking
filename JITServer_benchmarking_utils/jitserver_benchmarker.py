@@ -26,7 +26,6 @@ def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_pa
 
     Path(sp_directory).mkdir(parents=True, exist_ok=True)
 
-    print(compiler_json_file)
     xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, sp_directory)
     setup_kernel_args(kernel_json_file)
 
@@ -38,7 +37,7 @@ def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_pa
     if loud_output:
         for i in range(num_clients):
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-            print(command)
+            print("client command" + command)
             command = command.replace("'","")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)
@@ -58,7 +57,7 @@ def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_pa
             f_err = open(f'{client_directory}/error_file.txt', "w")
             f = open(f'{client_directory}/output_file.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-            print(command)
+            print("client command" + command)
             command = command.replace("'","")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)
@@ -91,8 +90,8 @@ if __name__ == "__main__":
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
 
-    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False)
-    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True)
+    compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
+    kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
     log_directory = config_comparer.create_hash_from_str(log_hash)
 

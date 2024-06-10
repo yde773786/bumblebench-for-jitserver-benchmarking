@@ -5,7 +5,7 @@ import shutil
 import hashlib
 
 
-def hunt_for_copies(json_file, replace, ordering) -> None:
+def hunt_for_copies(json_file, replace, ordering, loud) -> None:
     paths = list(Path('.').glob('**/*.json'))
 
     index_marked = -1
@@ -18,20 +18,24 @@ def hunt_for_copies(json_file, replace, ordering) -> None:
     for file in paths:
         if ordering:
              if compare_json_hashes(json_file, str(file)):
-                print(json_file + " is identical to " + str(file))
+                if loud:
+                    print(json_file + " is identical to " + str(file))
                 if replace:
-                    print("replaced contents of " + json_file + " with " + str(file))
+                    if loud:
+                        print("replaced contents of " + json_file + " with " + str(file))
                     shutil.copy(file.relative_to("."), json_file)
         else:
             if compare_json(json_file, str(file)):
-                print(json_file + " is identical to " + str(file))
+                if loud:
+                    print(json_file + " is identical to " + str(file))
                 if replace:
-                    print("replaced contents of " + json_file + " with " + str(file))
+                    if loud:
+                        print("replaced contents of " + json_file + " with " + str(file))
                     shutil.copy(file.relative_to("."), json_file)
 
 
 def create_unique_hash(json_dict) -> str:
-    # TODO: NOTE THAT THIS PRESERVES ORDERS OF LISTS WHEN HASHING
+    # NOTE THAT THIS PRESERVES ORDERS OF LISTS WHEN HASHING
     dump = json.dumps(json_dict, sort_keys=True)
     return create_hash_from_str(dump)
 
@@ -39,9 +43,9 @@ def create_hash_from_str(string) -> str:
     return hashlib.sha1(string.encode("utf-8")).hexdigest()
 
 
-def create_unique_hash_from_path(json_file, ordering) -> str:
+def create_unique_hash_from_path(json_file, ordering, loud) -> str:
     if not ordering:
-        hunt_for_copies(json_file, True, False)
+        hunt_for_copies(json_file, True, False, loud)
     config = json.load(open(json_file, 'r'))
     return create_unique_hash(config)
 
@@ -100,8 +104,10 @@ if __name__ == "__main__":
     parser.add_argument('-j', '--json_file_path', required=True)
     parser.add_argument('-o', '--ordering', action='store_true')
     parser.add_argument('-r', '--replace', action='store_true')
+    parser.add_argument('-l', '--loud', action='store_true')
     args = vars(parser.parse_args())
     json_file = args['json_file_path']
     replace = args['replace']
     ordering = args['ordering']
-    hunt_for_copies(json_file, replace, ordering)
+    loud = args['loud']
+    hunt_for_copies(json_file, replace, ordering, loud)

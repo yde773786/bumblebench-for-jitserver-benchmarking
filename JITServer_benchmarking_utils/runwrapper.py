@@ -73,14 +73,14 @@ if __name__ == "__main__":
 
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
-
+    os.environ['IsRandomJitServer'] = 'false'
     get_dir = ''
     for i in range(int(num_runs)):
         num = random.randint(0, 10000000)
         os.environ['TR_Seed'] = str(num)
 
         print(f"Normal JITServer run {i}")
-        os.environ['IsRandomJitServer'] = 'false'
+        os.environ['IsRoundRobinJitServer'] = 'false'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
         print("server command: " + cmd)
         proc = wait_for_server(cmd)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
         os.environ['TR_Seed'] = str(num)
         print(f"Changed JITServer run {i}")
-        os.environ['IsRandomJitServer'] = 'true'
+        os.environ['IsRoundRobinJitServer'] = 'true'
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
         print("server command: " + cmd)
         proc = wait_for_server(cmd)

@@ -34,14 +34,16 @@ if __name__ == "__main__":
                 if int(row[0]) != run:
                     run = int(row[0])
                     if data_1 != []:
-                        normal_data.append(sum(data_1)/len(data_1))
-                        random_data.append(sum(data_2)/len(data_2))
+                        # normal_data.append(sum(data_1)/len(data_1))
+                        # random_data.append(sum(data_2)/len(data_2))
+                        normal_data.append(max(data_1))
+                        random_data.append(max(data_2))
                         data_1 = []
                         data_2 = []
                 data_1.append(float(row[2]))
                 data_2.append(float(row[3]))
-        df = pd.DataFrame({f'{file_name}_normal_data:': normal_data})
-        df2 = pd.DataFrame({f'{file_name}_random_data:': random_data})
+        df = pd.DataFrame({f'{file_name}_normal_server:': normal_data})
+        df2 = pd.DataFrame({f'{file_name}_altered_server:': random_data})
         data_frames.extend([df, df2])
 
     both = pd.concat(data_frames, axis=1)

@@ -40,6 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-m', '--number_of_clients', required=True)
+    parser.add_argument('o2', '--openj9_path_2', required=True)
 
 
     args = vars(parser.parse_args())
@@ -47,11 +48,13 @@ if __name__ == "__main__":
     compiler_json_file = args['compiler_configuration']
     kernel_json_file = args['kernel_configuration']
     openj9_path = args['openj9_path']
+    openj9_path_2 = args['openj9_path_2']
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
     num_runs = args['number_of_runs']
     num_clients = args['number_of_clients']
     server_path = openj9_path + "/jitserver"
+    server_2_path = openj9_path_2 + "/jitserver"
     openj9_path = openj9_path + "/java"
     cmd = ''
 
@@ -84,7 +87,7 @@ if __name__ == "__main__":
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
         print("server command: " + cmd)
         proc = wait_for_server(cmd)
-        main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,False, int(num_clients), i)
+        main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,0, int(num_clients), i)
         proc.kill()
 
         print(f"Normal JITServer run {i} done")
@@ -95,10 +98,20 @@ if __name__ == "__main__":
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
         print("server command: " + cmd)
         proc = wait_for_server(cmd)
-        get_dir = main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,True, int(num_clients), i)
+        main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,1, int(num_clients), i)
         proc.kill()
 
         print(f"Changed JITServer run {i} done")
+
+        os.environ['TR_Seed'] = str(num)
+        print(f"Changed JITServer alt run {i}")
+        cmd = f'{server_2_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        print("server command: " + cmd)
+        proc = wait_for_server(cmd)
+        get_dir = main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,2, int(num_clients), i)
+        proc.kill()
+
+        print(f"Changed JITServer run alt {i} done")
 
 
     # Do a final analysis of the results
@@ -113,20 +126,23 @@ if __name__ == "__main__":
 
     for i in range(int(num_runs)):
         fcfs_elapsed_times = []
-        random_elapsed_times = []
-
+        altered_elapsed_times = []
+        altered_elapsed_times_2 = []
         for j in range(int(num_clients)):
             normal_file = open(get_dir + f'/normal_server/run_{i}/client_{j}/output_file.txt', 'r')
-            changed_file = open(get_dir + f'/altered_server/run_{i}/client_{j}/output_file.txt', 'r')
+            changed_file = open(get_dir + f'/round_robin_hmap/run_{i}/client_{j}/output_file.txt', 'r')
+            changed_file_2 = open(get_dir + f'/round_robin_alt/run_{i}/client_{j}/output_file.txt', 'r')
 
             normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
             changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+            changed_elapsed_time_2 = round(int(changed_file_2.readlines()[-2].split()[4]) / (10 ** 9), 2)
 
-            per_client_report_file.write(f"{i+2},{j+1},{normal_elapsed_time},{changed_elapsed_time}\n")
+            per_client_report_file.write(f"{i+2},{j+1},{normal_elapsed_time},{changed_elapsed_time}, {changed_elapsed_time_2}\n")
             fcfs_elapsed_times.append(normal_elapsed_time)
-            random_elapsed_times.append(changed_elapsed_time)
+            altered_elapsed_times.append(changed_elapsed_time)
+            altered_elapsed_times_2.append(changed_elapsed_time_2)
 
-        per_run_report_file.write(f'{i+1},{max(fcfs_elapsed_times)},{max(random_elapsed_times)},{min(fcfs_elapsed_times)}, {min(random_elapsed_times)},{sum(fcfs_elapsed_times)/len(fcfs_elapsed_times)},{sum(random_elapsed_times)/len(random_elapsed_times)}\n')
+        per_run_report_file.write(f'{i+1},{max(fcfs_elapsed_times)},{max(altered_elapsed_times)},{min(fcfs_elapsed_times)}, {min(altered_elapsed_times)},{sum(fcfs_elapsed_times)/len(fcfs_elapsed_times)},{sum(altered_elapsed_times)/len(altered_elapsed_times)}\n')
 
     per_client_report_file.close()
     per_run_report_file.close()

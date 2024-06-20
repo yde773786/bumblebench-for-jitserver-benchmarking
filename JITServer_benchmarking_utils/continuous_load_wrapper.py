@@ -197,33 +197,19 @@ if __name__ == "__main__":
     print("Normal server results:")
 
     per_client_report_file = open(get_dir + '/report_per_client.csv', 'w')
-    per_client_report_file.write("Server, Client, FCFS Elapsed Time (s)\n")
+    per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
 
     for i in range(int(num_clients)):
-        normal_file = open(get_dir + f'/normal_server/client_{i}/Output/output_file{i}.txt', 'r')
-        changed_file = open(get_dir + f'/altered_server/client_{i}/Output/output_file{i}.txt', 'r')
+        for j, output_file in enumerate(os.listdir(get_dir + f'/normal_server/client_{i}/Output')):
+            normal_file = open(get_dir + f'/normal_server/client_{i}/Output/output_file{j}.txt', 'r')
+            normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+            per_client_report_file.write(f"Normal, {i+1}, {j+1}, {normal_elapsed_time}\n")
 
-        normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-        changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+    for i in range(int(num_clients)):
+        for j, output_file in enumerate(os.listdir(get_dir + f'/altered_server/client_{i}/Output')):
+            changed_file = open(get_dir + f'/altered_server/client_{i}/Output/output_file{j}.txt', 'r')
+            changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+            per_client_report_file.write(f"Changed, {i+1}, {j+1}, {changed_elapsed_time}\n")
 
-        per_client_report_file.write(f"Normal, {i+1}, {normal_elapsed_time}\n")
-        per_client_report_file.write(f"Changed, {i+1}, {changed_elapsed_time}\n")
-
-    # for i in range(int(num_runs)):
-    #     fcfs_elapsed_times = []
-    #     random_elapsed_times = []
-    #
-    #     for j in range(int(num_clients)):
-    #         normal_file = open(get_dir + f'/normal_server/run_{i}/client_{j}/output_file.txt', 'r')
-    #         changed_file = open(get_dir + f'/altered_server/run_{i}/client_{j}/output_file.txt', 'r')
-    #
-    #         normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-    #         changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-    #
-    #         per_client_report_file.write(f"{i+2},{j+1},{normal_elapsed_time},{changed_elapsed_time}\n")
-    #         fcfs_elapsed_times.append(normal_elapsed_time)
-    #         random_elapsed_times.append(changed_elapsed_time)
-    #
-    #     per_run_report_file.write(f'{i+1},{max(fcfs_elapsed_times)},{max(random_elapsed_times)},{min(fcfs_elapsed_times)}, {min(random_elapsed_times)},{sum(fcfs_elapsed_times)/len(fcfs_elapsed_times)},{sum(random_elapsed_times)/len(random_elapsed_times)}\n')
 
     per_client_report_file.close()

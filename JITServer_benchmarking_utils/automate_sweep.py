@@ -1,10 +1,10 @@
 import os
 
-STAGGER = [4, 6, 8, 10, 12]
+STAGGER = [2, 3]
 
 for stagger in STAGGER:
-    os.system('python3 continuous_load_wrapper.py  -o ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n 10 -s {stagger} -t 600')
+    os.system(f'python3 continuous_load_wrapper.py  -o ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n 2 -s {stagger} -t 10')
 
-    for directory in os.listdir("JITServer_benchmarking_utils"):
-        if os.path.isdir(directory) and "__pycache__" not in directory:
+    for directory in os.listdir("."):
+        if os.path.isdir(directory) and "__pycache__" not in directory and "cw" not in directory:
             os.system(f"mv {directory} cw_{stagger}")

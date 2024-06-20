@@ -213,3 +213,5 @@ if __name__ == "__main__":
 
 
     per_client_report_file.close()
+    cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -f figure -clw'
+    proc = subprocess.Popen(cmd)

@@ -12,9 +12,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument('-d', '--data', required=True)
+    parser.add_argument('-f', '--figure_export_name', required=False)
     parser.add_argument('-clw', '--continuous_load_wrapper', action='store_true')
     args = vars(parser.parse_args())
     total_data = args['data']
+    figure_export_name = args['figure_export_name']
     continuous_load_wrapper = args['continuous_load_wrapper']
     total_data = total_data.split(",")
 
@@ -36,9 +38,9 @@ if __name__ == "__main__":
                 next(reader, None)
                 for row in reader:
                     if row[0] == "Normal":
-                        normal_data.append(float(row[2]))
+                        normal_data.append(float(row[3]))
                     else:
-                        random_data.append(float(row[2]))
+                        random_data.append(float(row[3]))
             df = pd.DataFrame({f'{file_name}_normal_server:': normal_data})
             df2 = pd.DataFrame({f'{file_name}_altered_server:': random_data})
             data_frames.extend([df, df2])
@@ -74,7 +76,10 @@ if __name__ == "__main__":
 
     both = pd.concat(data_frames, axis=1)
     print(both)
-    seaborn.ecdfplot(data=both)
+    plot = seaborn.ecdfplot(data=both)
+    fig = plot.get_figure()
+    if figure_export_name is not None:
+        fig.savefig(f'{figure_export_name}.png')
 
     plt.show()
 

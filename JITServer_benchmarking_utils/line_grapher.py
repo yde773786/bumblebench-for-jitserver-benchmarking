@@ -16,15 +16,14 @@ if __name__ == "__main__":
     for data in total_data:
         x_data = []
         y_data = []
-        counter = 0
         with open(data, "r") as file:
             for row in file:
                 if "#INFO:  size:" in row:
                     splitted = row.split(":")
                     num = int(splitted[2])
-                    x_data.append(counter)
+                    other_num = float(splitted[4])
+                    x_data.append(other_num)
                     y_data.append(num)
-                    counter += 1
         x = np.array(x_data)
         y = np.array(y_data)
         plt.plot(x, y)

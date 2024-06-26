@@ -14,10 +14,12 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--data', required=True)
     parser.add_argument('-f', '--figure_export_name', required=False)
     parser.add_argument('-clw', '--continuous_load_wrapper', action='store_true')
+    parser.add_argument('h', '--histogram', required=False)
     args = vars(parser.parse_args())
     total_data = args['data']
     figure_export_name = args['figure_export_name']
     continuous_load_wrapper = args['continuous_load_wrapper']
+    histogram = args['histogram']
     total_data = total_data.split(",")
 
     data_frames = []
@@ -76,10 +78,19 @@ if __name__ == "__main__":
 
     both = pd.concat(data_frames, axis=1)
     print(both)
-    plot = seaborn.ecdfplot(data=both)
-    fig = plot.get_figure()
-    if figure_export_name is not None:
-        fig.savefig(f'{figure_export_name}.png')
+    if histogram is not None:
+        for frame in data_frames:
+            plot = seaborn.displot(data=frame)
+
+        plot = seaborn.displot(data=both)
+        fig = plot.fig
+        if figure_export_name is not None:
+            fig.savefig(f'{figure_export_name}.png')
+    else:
+        plot = seaborn.ecdfplot(data=both)
+        fig = plot.get_figure()
+        if figure_export_name is not None:
+            fig.savefig(f'{figure_export_name}.png')
 
     plt.show()
 

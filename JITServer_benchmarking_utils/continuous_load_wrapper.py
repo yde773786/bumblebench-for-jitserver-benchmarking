@@ -10,12 +10,15 @@ import subprocess
 from pathlib import Path
 import config_comparer
 
+
 def remove_empty_strings(lst) -> list:
     new_list = []
     for i in lst:
         if i.strip() != "":
             new_list.append(i)
     return new_list
+
+
 def wait_for_server(cmd):
     TIMEOUT = 20
     current_time = Date.datetime.now()
@@ -34,9 +37,10 @@ def wait_for_server(cmd):
         if Date.datetime.now() - current_time > Date.timedelta(seconds=TIMEOUT):
             proc.kill()  # Ensure the process is killed if it times out
             raise TimeoutError("JITServer did not start in time")
-        
 
-def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, log_directory, loud_output):
+
+def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                          log_directory, loud_output):
     limit = Date.datetime.now() + Date.timedelta(seconds=int(time_to_run))
 
     d_err = Path(f'{log_directory}/Error').mkdir(parents=True, exist_ok=True)
@@ -56,7 +60,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
         if loud_output:
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             print("client command" + command)
-            command = command.replace("'","")
+            command = command.replace("'", "")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)
             client_process = subprocess.Popen(command_splt)
@@ -68,7 +72,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             f = open(f'{d_out}/output_file{i}.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             print("client command" + command)
-            command = command.replace("'","")
+            command = command.replace("'", "")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)
             client_process = subprocess.Popen(command_splt, stdout=f, stderr=f_err)
@@ -95,6 +99,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-n', '--number_of_clients', required=True)
     parser.add_argument('-s', '--staggering_time_between_loads', required=True)
+    parser.add_argument('-f', '--figure_name', required=False)
 
     args = vars(parser.parse_args())
 
@@ -106,6 +111,7 @@ if __name__ == "__main__":
     time_to_run = args['time_to_run']
     num_clients = args['number_of_clients']
     staggering_time = args['staggering_time_between_loads']
+    figure_name = args['figure_name']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
     cmd = ''
@@ -121,8 +127,8 @@ if __name__ == "__main__":
     cmd_options = open(f'{log_directory}/command_line_options.txt', "w")
     cmd_options.write(f'time clients run: {time_to_run}\n')
     cmd_options.write(f'number of clients: {num_clients}\n')
-    cmd_options.write(f'initial staggering time between loads: {num_clients}\n')
-    cmd_options.write(f'number of continuous loads: {num_clients}\n')
+    cmd_options.write(f'initial staggering time between loads: {staggering_time}\n')
+    # cmd_options.write(f'number of continuous loads: {num_clients}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.close()
 
@@ -150,7 +156,9 @@ if __name__ == "__main__":
     for i in range(int(num_clients)):
         client_directory = Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
         client_directory = f"{sp_directory}/client_{i}"
-        command = Process(target=start_continuous_load, args=(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory, loud_output))
+        command = Process(target=start_continuous_load, args=(
+        openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
+        loud_output))
         command.start()
         clients.append(command)
         time.sleep(int(staggering_time))
@@ -174,11 +182,12 @@ if __name__ == "__main__":
     now = str(Date.datetime.now())
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
-
     for i in range(int(num_clients)):
         client_directory = Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
         client_directory = f"{sp_directory}/client_{i}"
-        command = Process(target=start_continuous_load, args=(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory, loud_output))
+        command = Process(target=start_continuous_load, args=(
+        openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
+        loud_output))
         command.start()
         clients.append(command)
         time.sleep(int(staggering_time))
@@ -203,15 +212,18 @@ if __name__ == "__main__":
         for j, output_file in enumerate(os.listdir(get_dir + f'/normal_server/client_{i}/Output')):
             normal_file = open(get_dir + f'/normal_server/client_{i}/Output/output_file{j}.txt', 'r')
             normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-            per_client_report_file.write(f"Normal, {i+1}, {j+1}, {normal_elapsed_time}\n")
+            per_client_report_file.write(f"Normal, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
 
     for i in range(int(num_clients)):
         for j, output_file in enumerate(os.listdir(get_dir + f'/altered_server/client_{i}/Output')):
             changed_file = open(get_dir + f'/altered_server/client_{i}/Output/output_file{j}.txt', 'r')
             changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-            per_client_report_file.write(f"Changed, {i+1}, {j+1}, {changed_elapsed_time}\n")
-
+            per_client_report_file.write(f"Changed, {i + 1}, {j + 1}, {changed_elapsed_time}\n")
 
     per_client_report_file.close()
-    cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -f figure -clw'
+    cmd = ''
+    if figure_name is not None:
+        cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -f {figure_name} -clw'
+    else:
+        cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -clw'
     proc = subprocess.Popen(cmd, shell=True)

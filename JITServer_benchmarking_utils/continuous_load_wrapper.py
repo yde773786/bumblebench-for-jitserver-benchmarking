@@ -136,7 +136,7 @@ if __name__ == "__main__":
     setup_kernel_args(kernel_json_file)
 
     print(f"Normal JITServer run")
-    os.environ['IsRoundRobinJitServer'] = 'false'
+    os.environ['IsCFJitServer'] = 'false'
     cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
     print("server command: " + cmd)
     server = wait_for_server(cmd)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     print(f"Normal JITServer run done")
 
     print(f"Changed JITServer run")
-    os.environ['IsRoundRobinJitServer'] = 'true'
+    os.environ['IsCFJitServer'] = 'true'
     cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
     print("server command: " + cmd)
     server = wait_for_server(cmd)

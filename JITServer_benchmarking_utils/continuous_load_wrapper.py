@@ -186,10 +186,10 @@ if __name__ == "__main__":
 
     for q in range(len(directories)):
         for i in range(int(num_clients)):
-            for j, output_file in enumerate(os.listdir(get_dir + f'/{directories[i]}/client_{i}/Output')):
-                normal_file = open(get_dir + f'/{directories[i]}/client_{i}/Output/output_file{j}.txt', 'r')
+            for j, output_file in enumerate(os.listdir(get_dir + f'/{directories[q]}/client_{i}/Output')):
+                normal_file = open(get_dir + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
                 normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-                per_client_report_file.write(f"{directories[i]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
+                per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
 
     per_client_report_file.close()
     cmd = ''

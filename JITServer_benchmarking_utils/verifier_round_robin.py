@@ -3,7 +3,7 @@
 import sys
 
 log = open(sys.argv[1], 'r').readlines()
-output = open('output.txt', 'w')
+output = open('recent0627/output.txt', 'w')
 
 first_cql = first_crql = False
 

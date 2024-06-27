@@ -14,13 +14,8 @@ def remove_empty_strings(lst) -> list:
             new_list.append(i)
     return new_list
 
-def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, altered_JITserver, num_clients, run) -> str:
+def main_function(log_directory, compiler_json_file, kernel_json_file, openj9_path, bumblebench_jitserver_path, loud_output, sp_directory, num_clients, run) -> str:
     clients = []
-    sp_directory = log_directory
-    if altered_JITserver:
-        sp_directory += "/altered_server"
-    else:
-        sp_directory += "/normal_server"
 
     sp_directory += f'/run_{run}'
 
@@ -97,4 +92,4 @@ if __name__ == "__main__":
 
     Path(log_directory).mkdir(parents=True, exist_ok=True)
     
-    main_function(log_directory, compiler_json_file, kernel_json_file, openj9_path,bumblebench_jitserver_path,loud_output, False, 1, 1)
+    main_function(log_directory, compiler_json_file, kernel_json_file, openj9_path,bumblebench_jitserver_path,loud_output, log_directory+"/normal_server", 1, 1)

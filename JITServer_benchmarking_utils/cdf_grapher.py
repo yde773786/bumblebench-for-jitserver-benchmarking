@@ -27,11 +27,10 @@ if __name__ == "__main__":
     if continuous_load_wrapper:
         for data in total_data:
             run = 0
-            data_1 = []
-            data_2 = []
-
-            normal_data = []
-            random_data = []
+            directories = ['normal_server', 'round_robin_server', 'least_done_first_server']
+            data_wrapper = []
+            for i in directories:
+                data_wrapper.append([])
             file_name = data.split('/')[-1]
             file_name = file_name.replace(".csv","")
 
@@ -39,13 +38,12 @@ if __name__ == "__main__":
                 reader = csv.reader(file)
                 next(reader, None)
                 for row in reader:
-                    if row[0] == "Normal":
-                        normal_data.append(float(row[3]))
-                    else:
-                        random_data.append(float(row[3]))
-            df = pd.DataFrame({f'{file_name}_normal_server:': normal_data})
-            df2 = pd.DataFrame({f'{file_name}_altered_server:': random_data})
-            data_frames.extend([df, df2])
+                    for i in range(len(directories)):
+                        if row[0] == directories[i]:
+                            data_wrapper[i].append(float(row[3]))
+            for i in range(len(directories)):
+                df = pd.DataFrame({f'{file_name}_{directories[i]}:': data_wrapper[i]})
+                data_frames.append(df)
     else:
         for data in total_data:
             run = 0

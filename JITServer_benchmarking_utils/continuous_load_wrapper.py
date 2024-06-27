@@ -38,7 +38,6 @@ def wait_for_server(cmd):
             proc.kill()  # Ensure the process is killed if it times out
             raise TimeoutError("JITServer did not start in time")
 
-
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
                           log_directory, loud_output):
     limit = Date.datetime.now() + Date.timedelta(seconds=int(time_to_run))
@@ -82,8 +81,6 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
 
 
 if __name__ == "__main__":
-    os.environ['IsRandomJitServer'] = 'false'
-    os.environ['IsRoundRobinJitServer'] = 'false'
     os.environ['TR_Seed'] = str(0)
     parser = argparse.ArgumentParser(
         prog='runwrapper',
@@ -141,63 +138,42 @@ if __name__ == "__main__":
     xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, log_directory)
     setup_kernel_args(kernel_json_file)
 
-    print(f"Normal JITServer run")
-    os.environ['IsCFJitServer'] = 'false'
-    cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
-    print("server command: " + cmd)
-    server = wait_for_server(cmd)
-    sp_directory = log_directory + "/normal_server"
-    Path(sp_directory).mkdir(parents=True, exist_ok=True)
-    shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
-    shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
-    now = str(Date.datetime.now())
-    now = now.replace(" ", ".").replace(":", "").replace("-", "")
+    run_env_vars = [None,'IsRoundRobinJitServer','IsLeastDoneFirstJitServer']
+    directories = ['normal_server', 'round_robin_server', 'least_done_first_server']
 
-    for i in range(int(num_clients)):
-        client_directory = Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
-        client_directory = f"{sp_directory}/client_{i}"
-        command = Process(target=start_continuous_load, args=(
-        openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-        loud_output))
-        command.start()
-        clients.append(command)
-        time.sleep(int(staggering_time))
-    for client in clients:
-        client.join()
+    for i in range(len(run_env_vars)):
+        print(f'{directories[i]} run')
+        os.environ['IsRoundRobinJitServer'] = 'false'
+        os.environ['IsLeastDoneFirstJitServer'] = 'false'
+        if run_env_vars[i] is not None:
+            os.environ[run_env_vars[i]] = 'true'
 
-    shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
-    server.kill()
+        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        print("server command: " + cmd)
+        server = wait_for_server(cmd)
+        sp_directory = log_directory + f'/{directories[i]}'
+        Path(sp_directory).mkdir(parents=True, exist_ok=True)
+        shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
+        shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
+        now = str(Date.datetime.now())
+        now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
-    print(f"Normal JITServer run done")
+        for i in range(int(num_clients)):
+            client_directory = Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
+            client_directory = f"{sp_directory}/client_{i}"
+            command = Process(target=start_continuous_load, args=(
+            openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
+            loud_output))
+            command.start()
+            clients.append(command)
+            time.sleep(int(staggering_time))
+        for client in clients:
+            client.join()
 
-    print(f"Changed JITServer run")
-    os.environ['IsCFJitServer'] = 'true'
-    cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
-    print("server command: " + cmd)
-    server = wait_for_server(cmd)
-    sp_directory = log_directory + "/altered_server"
-    Path(sp_directory).mkdir(parents=True, exist_ok=True)
-    shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
-    shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
-    now = str(Date.datetime.now())
-    now = now.replace(" ", ".").replace(":", "").replace("-", "")
+        shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
+        server.kill()
 
-    for i in range(int(num_clients)):
-        client_directory = Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
-        client_directory = f"{sp_directory}/client_{i}"
-        command = Process(target=start_continuous_load, args=(
-        openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-        loud_output))
-        command.start()
-        clients.append(command)
-        time.sleep(int(staggering_time))
-    for client in clients:
-        client.join()
-
-    shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
-    server.kill()
-
-    print(f"Changed JITServer run done")
+        print(f"{directories[i]} run done")
 
     # Do a final analysis of the results
     get_dir = log_directory
@@ -208,17 +184,12 @@ if __name__ == "__main__":
     per_client_report_file = open(get_dir + '/report_per_client.csv', 'w')
     per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
 
-    for i in range(int(num_clients)):
-        for j, output_file in enumerate(os.listdir(get_dir + f'/normal_server/client_{i}/Output')):
-            normal_file = open(get_dir + f'/normal_server/client_{i}/Output/output_file{j}.txt', 'r')
-            normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-            per_client_report_file.write(f"Normal, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
-
-    for i in range(int(num_clients)):
-        for j, output_file in enumerate(os.listdir(get_dir + f'/altered_server/client_{i}/Output')):
-            changed_file = open(get_dir + f'/altered_server/client_{i}/Output/output_file{j}.txt', 'r')
-            changed_elapsed_time = round(int(changed_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-            per_client_report_file.write(f"Changed, {i + 1}, {j + 1}, {changed_elapsed_time}\n")
+    for q in range(len(directories)):
+        for i in range(int(num_clients)):
+            for j, output_file in enumerate(os.listdir(get_dir + f'/{directories[i]}/client_{i}/Output')):
+                normal_file = open(get_dir + f'/{directories[i]}/client_{i}/Output/output_file{j}.txt', 'r')
+                normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+                per_client_report_file.write(f"{directories[i]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
 
     per_client_report_file.close()
     cmd = ''

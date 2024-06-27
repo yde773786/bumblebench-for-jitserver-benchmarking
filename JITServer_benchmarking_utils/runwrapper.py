@@ -61,6 +61,10 @@ if __name__ == "__main__":
     log_hash_plus_info = log_hash + str(num_runs) + str(num_clients)
     log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
 
+    base_path = f'runwrapper_clients_{num_clients}_runs_{num_runs}'
+    Path(base_path).mkdir(parents=True, exist_ok=True)
+
+    log_directory = f'{base_path}/{log_directory}'
     Path(log_directory).mkdir(parents=True, exist_ok=True)
 
     cmd_options = open(f'{log_directory}/command_line_options.txt', "w")
@@ -75,7 +79,7 @@ if __name__ == "__main__":
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
     os.environ['IsRandomJitServer'] = 'false'
-    get_dir = ''
+    get_dir = log_directory
 
     for i in range(int(num_runs)):
         num = random.randint(0, 10000000)

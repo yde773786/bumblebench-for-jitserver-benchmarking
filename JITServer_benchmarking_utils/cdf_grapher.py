@@ -3,6 +3,7 @@ import pandas as pd
 import csv
 import seaborn
 import matplotlib
+import constants
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 if __name__ == "__main__":
@@ -23,11 +24,10 @@ if __name__ == "__main__":
     total_data = total_data.split(",")
 
     data_frames = []
-
+    directories = constants.directories
     if continuous_load_wrapper:
         for data in total_data:
             run = 0
-            directories = ['normal_server', 'round_robin_server', 'least_done_first_server']
             data_wrapper = []
             for i in directories:
                 data_wrapper.append([])
@@ -47,11 +47,16 @@ if __name__ == "__main__":
     else:
         for data in total_data:
             run = 0
-            data_1 = []
-            data_2 = []
 
-            normal_data = []
-            random_data = []
+            temp_data_wrapper = []
+            temp_data_wrapper.clear()
+            for i in directories:
+                temp_data_wrapper.append([])
+
+            data_wrapper = []
+            for i in directories:
+                data_wrapper.append([])
+
             file_name = data.split('/')[-1]
             file_name = file_name.replace(".csv","")
 
@@ -61,18 +66,19 @@ if __name__ == "__main__":
                 for row in reader:
                     if int(row[0]) != run:
                         run = int(row[0])
-                        if data_1 != []:
-                            # normal_data.append(sum(data_1)/len(data_1))
-                            # random_data.append(sum(data_2)/len(data_2))
-                            normal_data.append(max(data_1))
-                            random_data.append(max(data_2))
-                            data_1 = []
-                            data_2 = []
-                    data_1.append(float(row[2]))
-                    data_2.append(float(row[3]))
-            df = pd.DataFrame({f'{file_name}_normal_server:': normal_data})
-            df2 = pd.DataFrame({f'{file_name}_altered_server:': random_data})
-            data_frames.extend([df, df2])
+                        if temp_data_wrapper[0]:
+                            # for q in range(len(temp_data_wrapper)):
+                            #     data_wrapper[q].append(sum(temp_data_wrapper[q])/len(temp_data_wrapper[q]))
+                            for q in range(len(temp_data_wrapper)):
+                                data_wrapper[q].append(max(temp_data_wrapper[q]))
+                            temp_data_wrapper.clear()
+                            for i in directories:
+                                temp_data_wrapper.append([])
+                    for q in range(len(temp_data_wrapper)):
+                        temp_data_wrapper[q].append(float(row[2 + q]))
+            for i in range(len(directories)):
+                df = pd.DataFrame({f'{file_name}_{directories[i]}:': data_wrapper[i]})
+                data_frames.append(df)
 
     both = pd.concat(data_frames, axis=1)
     print(both)

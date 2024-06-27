@@ -163,9 +163,9 @@ if __name__ == "__main__":
         now = str(Date.datetime.now())
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
-        for i in range(int(num_clients)):
-            Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
-            client_directory = f"{sp_directory}/client_{i}"
+        for q in range(int(num_clients)):
+            Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
+            client_directory = f"{sp_directory}/client_{q}"
             command = Process(target=start_continuous_load, args=(
             openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
             loud_output))

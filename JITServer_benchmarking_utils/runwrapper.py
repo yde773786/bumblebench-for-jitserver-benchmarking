@@ -120,8 +120,9 @@ if __name__ == "__main__":
     for i in range(int(num_runs)):
         # fcfs_elapsed_times = []
         # random_elapsed_times = []
-        times = []
+
         for j in range(int(num_clients)):
+            times = []
             for q in range(len(directories)):
                 file = open(get_dir + f'/{directories[q]}/run_{i}/client_{j}/output_file.txt', 'r')
                 times.append(round(int(file.readlines()[-2].split()[4]) / (10 ** 9), 2))

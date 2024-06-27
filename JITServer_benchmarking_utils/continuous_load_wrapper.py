@@ -169,7 +169,7 @@ if __name__ == "__main__":
             loud_output))
             command.start()
             clients.append(command)
-            time.sleep(int(staggering_time))
+            time.sleep(float(staggering_time))
         for client in clients:
             client.join()
 

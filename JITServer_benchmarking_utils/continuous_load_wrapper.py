@@ -119,7 +119,7 @@ if __name__ == "__main__":
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time)
     log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
 
-    base_path = f'clients({num_clients})stagger({staggering_time})run_time({time_to_run})'
+    base_path = f'clients_{num_clients}_stagger_{staggering_time}_run_time_{time_to_run}_'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     log_directory = f'{base_path}/{log_directory}'
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
         for i in range(int(num_clients)):
-            client_directory = Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
+            Path(f"{sp_directory}/client_{i}").mkdir(parents=True, exist_ok=True)
             client_directory = f"{sp_directory}/client_{i}"
             command = Process(target=start_continuous_load, args=(
             openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,

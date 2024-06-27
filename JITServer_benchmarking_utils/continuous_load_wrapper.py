@@ -4,7 +4,7 @@ import datetime as Date
 import shutil
 from multiprocessing import Process
 
-from JITServer_benchmarking_utils import constants
+import constants
 from compiler_config import get_compiler_args, change_vlog_directory
 from kernel_config import setup_kernel_args
 import time

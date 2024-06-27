@@ -119,7 +119,7 @@ if __name__ == "__main__":
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time)
     log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
 
-    base_path = f'clients[{num_clients}]stagger[{staggering_time}]run_time[{time_to_run}]'
+    base_path = f'clients({num_clients})stagger({staggering_time})run_time({time_to_run})'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     log_directory = f'{base_path}/{log_directory}'
 

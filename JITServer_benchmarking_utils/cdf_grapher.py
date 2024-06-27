@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--data', required=True)
     parser.add_argument('-f', '--figure_export_name', required=False)
     parser.add_argument('-clw', '--continuous_load_wrapper', action='store_true')
-    parser.add_argument('h', '--histogram', required=False)
+    parser.add_argument('-his', '--histogram', required=False)
     args = vars(parser.parse_args())
     total_data = args['data']
     figure_export_name = args['figure_export_name']

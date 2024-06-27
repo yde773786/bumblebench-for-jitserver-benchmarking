@@ -7,7 +7,7 @@ from pathlib import Path
 
 import config_comparer
 from jitserver_benchmarker import main_function
-
+import constants
 def wait_for_server(cmd):
     TIMEOUT = 20
     current_time = Date.datetime.now()
@@ -73,12 +73,11 @@ if __name__ == "__main__":
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.close()
 
-    run_env_vars = [None,'IsRoundRobinJitServer','IsLeastDoneFirstJitServer']
-    directories = ['normal_server', 'round_robin_server', 'least_done_first_server']
+    run_env_vars = constants.run_env_vars
+    directories = constants.directories
 
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
-    os.environ['IsRandomJitServer'] = 'false'
     get_dir = log_directory
 
     for i in range(int(num_runs)):
@@ -86,8 +85,9 @@ if __name__ == "__main__":
         os.environ['TR_Seed'] = str(num)
 
         for q in range(len(run_env_vars)):
-            os.environ['IsRoundRobinJitServer'] = 'false'
-            os.environ['IsLeastDoneFirstJitServer'] = 'false'
+            for var in run_env_vars:
+                if var is not None:
+                    os.environ[var] = 'false'
             if run_env_vars[q] is not None:
                 os.environ[run_env_vars[q]] = 'true'
             print(f"{directories[q]} run {i}")

@@ -3,6 +3,8 @@ import os
 import datetime as Date
 import shutil
 from multiprocessing import Process
+
+from JITServer_benchmarking_utils import constants
 from compiler_config import get_compiler_args, change_vlog_directory
 from kernel_config import setup_kernel_args
 import time
@@ -143,13 +145,14 @@ if __name__ == "__main__":
     xjit_flags, xaot_flags, other_flags = get_compiler_args(compiler_json_file, log_directory)
     setup_kernel_args(kernel_json_file)
 
-    run_env_vars = [None,'IsRoundRobinJitServer','IsLeastDoneFirstJitServer']
-    directories = ['normal_server', 'round_robin_server', 'least_done_first_server']
+    run_env_vars = constants.run_env_vars
+    directories = constants.directories
 
     for i in range(len(run_env_vars)):
         print(f'{directories[i]} run')
-        os.environ['IsRoundRobinJitServer'] = 'false'
-        os.environ['IsLeastDoneFirstJitServer'] = 'false'
+        for var in run_env_vars:
+            if var is not None:
+                os.environ[var] = 'false'
         if run_env_vars[i] is not None:
             os.environ[run_env_vars[i]] = 'true'
 

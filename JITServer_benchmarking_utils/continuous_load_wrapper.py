@@ -119,13 +119,16 @@ if __name__ == "__main__":
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time)
     log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
 
+    base_path = f'clients[{num_clients}]stagger[{staggering_time}]run_time[{time_to_run}]'
+    Path(base_path).mkdir(parents=True, exist_ok=True)
+    log_directory = f'{base_path}/{log_directory}'
+
     Path(log_directory).mkdir(parents=True, exist_ok=True)
 
     cmd_options = open(f'{log_directory}/command_line_options.txt', "w")
     cmd_options.write(f'time clients run: {time_to_run}\n')
     cmd_options.write(f'number of clients: {num_clients}\n')
     cmd_options.write(f'initial staggering time between loads: {staggering_time}\n')
-    # cmd_options.write(f'number of continuous loads: {num_clients}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.close()
 

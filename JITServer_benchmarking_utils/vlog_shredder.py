@@ -12,10 +12,16 @@ if __name__ == "__main__":
     client_set = set()
     file2 = open(total_data+'_condensed', "w+")
     print(f'opening {total_data}_condensed')
+    starting_set = {"#INFO:  Elapsed Time processing entry from client", "#INFO:  Client id before processing",
+                    "#INFO:  NMTBC", "#INFO:  client:"}
     with open(total_data, "r") as file:
         for row in file:
-            if "#INFO:  Elapsed Time processing entry from client" in row:
+            write_file = False
+            for i in starting_set:
+                if i in row:
+                    write_file = True
+            if write_file:
                 file2.write(row)
     file2.close()
-    print("done")
+    print("completed")
     exit(0)

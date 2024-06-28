@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--data', required=True)
     parser.add_argument('-f', '--figure_export_name', required=False)
     parser.add_argument('-clw', '--continuous_load_wrapper', action='store_true')
-    parser.add_argument('-his', '--histogram', required=False)
+    parser.add_argument('-his', '--histogram', action='store_true')
     args = vars(parser.parse_args())
     total_data = args['data']
     figure_export_name = args['figure_export_name']
@@ -82,19 +82,22 @@ if __name__ == "__main__":
 
     both = pd.concat(data_frames, axis=1)
     print(both)
-    if histogram is not None:
+    if histogram:
         for frame in data_frames:
             plot = seaborn.displot(data=frame)
-
+            plt.title("Histogram of completion times for clients using different JITServers")
+            plt.xlabel("Completion time (s)")
         plot = seaborn.displot(data=both)
+        plt.title("Histogram of completion times for clients using different JITServers")
+        plt.xlabel("Completion time (s)")
         fig = plot.fig
         if figure_export_name is not None:
             fig.savefig(f'{figure_export_name}.png')
     else:
         plot = seaborn.ecdfplot(data=both)
         fig = plot.get_figure()
+        plot.set_axis_labels("label!!!")
         if figure_export_name is not None:
             fig.savefig(f'{figure_export_name}.png')
-
     plt.show()
 

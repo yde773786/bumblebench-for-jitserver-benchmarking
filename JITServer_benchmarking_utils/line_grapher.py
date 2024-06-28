@@ -27,6 +27,9 @@ if __name__ == "__main__":
         x = np.array(x_data)
         y = np.array(y_data)
         plt.plot(x, y)
+    plt.title("Server size vs time at the JITServer (100 clients)")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Server size")
     plt.show()
 
 

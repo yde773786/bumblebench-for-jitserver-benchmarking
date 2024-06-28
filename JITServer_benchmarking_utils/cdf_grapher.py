@@ -96,7 +96,7 @@ if __name__ == "__main__":
     else:
         plot = seaborn.ecdfplot(data=both)
         fig = plot.get_figure()
-        plot.set_axis_labels("label!!!")
+        plt.xlabel("Completion time (s)")
         if figure_export_name is not None:
             fig.savefig(f'{figure_export_name}.png')
     plt.show()

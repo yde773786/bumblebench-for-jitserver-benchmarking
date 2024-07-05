@@ -180,6 +180,7 @@ if __name__ == "__main__":
 
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         server.kill()
+        server.wait()
 
         print(f"{directories[i]} run done")
 

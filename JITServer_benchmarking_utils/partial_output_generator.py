@@ -14,10 +14,11 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     total_data = args['data']
     continuous_load_wrapper = args['continuous_load_wrapper']
-    per_client_report_file = open(total_data + '/report_per_client.csv', 'w')
-    per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
+
     directories = constants.directories
     if not continuous_load_wrapper:
+        per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
+        per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
         files_in_dir = os.listdir(total_data + f'/{directories[0]}')
         clients_in_dir = [k for k in files_in_dir if "client" in k]
         for q in range(len(directories)):
@@ -27,7 +28,7 @@ if __name__ == "__main__":
                     normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
                     per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
     else:
-        per_client_report_file = open(total_data + '/report_per_client.csv', 'w')
+        per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
 
         header_string = "Run, Client"
         for i in range(len(directories)):

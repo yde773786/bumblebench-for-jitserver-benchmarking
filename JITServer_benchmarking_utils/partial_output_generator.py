@@ -16,7 +16,7 @@ if __name__ == "__main__":
     continuous_load_wrapper = args['continuous_load_wrapper']
 
     directories = constants.directories
-    if not continuous_load_wrapper:
+    if continuous_load_wrapper:
         per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
         per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
         files_in_dir = os.listdir(total_data + f'/{directories[0]}')

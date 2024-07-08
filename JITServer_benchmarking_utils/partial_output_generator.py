@@ -25,8 +25,10 @@ if __name__ == "__main__":
             for i in range(int(len(clients_in_dir))):
                 for j, output_file in enumerate(os.listdir(total_data + f'/{directories[q]}/client_{i}/Output')):
                     normal_file = open(total_data + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
-                    normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-                    per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
+                    lines = normal_file.readlines()
+                    if "The calculation took" in lines[-2]:
+                        normal_elapsed_time = round(int(lines[-2].split()[4]) / (10 ** 9), 2)
+                        per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
     else:
         per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
 
@@ -51,15 +53,20 @@ if __name__ == "__main__":
 
         for i in range(int(num_runs)):
             for j in range(int(num_clients)):
+                abort = False
                 times = []
                 for q in range(len(directories)):
                     file = open(total_data + f'/{directories[q]}/run_{i}/client_{j}/output_file.txt', 'r')
-                    times.append(round(int(file.readlines()[-2].split()[4]) / (10 ** 9), 2))
-
-                middle_str = f"{i+2},{j+1}"
-                for q in range(len(times)):
-                    middle_str += f',{times[q]}'
-                middle_str += '\n'
-                per_client_report_file.write(middle_str)
+                    lines = file.readlines()
+                    if "The calculation took" in lines[-2]:
+                        times.append(round(int(file.readlines()[-2].split()[4]) / (10 ** 9), 2))
+                    else:
+                        abort = True
+                if not abort:
+                    middle_str = f"{i+2},{j+1}"
+                    for q in range(len(times)):
+                        middle_str += f',{times[q]}'
+                    middle_str += '\n'
+                    per_client_report_file.write(middle_str)
 
     per_client_report_file.close()

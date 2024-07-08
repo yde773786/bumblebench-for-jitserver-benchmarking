@@ -26,7 +26,7 @@ if __name__ == "__main__":
                 for j, output_file in enumerate(os.listdir(total_data + f'/{directories[q]}/client_{i}/Output')):
                     normal_file = open(total_data + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
                     lines = normal_file.readlines()
-                    if "The calculation took" in lines[-2]:
+                    if len(lines) > 2 and "The calculation took" in lines[-2]:
                         normal_elapsed_time = round(int(lines[-2].split()[4]) / (10 ** 9), 2)
                         per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
     else:
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 for q in range(len(directories)):
                     file = open(total_data + f'/{directories[q]}/run_{i}/client_{j}/output_file.txt', 'r')
                     lines = file.readlines()
-                    if "The calculation took" in lines[-2]:
+                    if len(lines) > 2 and "The calculation took" in lines[-2]:
                         times.append(round(int(file.readlines()[-2].split()[4]) / (10 ** 9), 2))
                     else:
                         abort = True

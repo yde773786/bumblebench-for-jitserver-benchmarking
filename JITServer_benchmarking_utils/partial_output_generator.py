@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from JITServer_benchmarking_utils import constants
+import constants
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

@@ -14,24 +14,30 @@ def hunt_for_copies(json_file, replace, ordering, loud) -> None:
             index_marked = i
             break
     paths.pop(index_marked)
-
+    common_dirs = set()
     for file in paths:
-        if ordering:
-             if compare_json_hashes(json_file, str(file)):
-                if loud:
-                    print(json_file + " is identical to " + str(file))
-                if replace:
-                    if loud:
-                        print("replaced contents of " + json_file + " with " + str(file))
-                    shutil.copy(file.relative_to("."), json_file)
+        common_path = str(file.absolute())
+        common_path = common_path.split('/')[-3]
+        if common_path in common_dirs:
+            pass
         else:
-            if compare_json(json_file, str(file)):
-                if loud:
-                    print(json_file + " is identical to " + str(file))
-                if replace:
+            common_dirs.add(common_path)
+            if ordering:
+                 if compare_json_hashes(json_file, str(file)):
                     if loud:
-                        print("replaced contents of " + json_file + " with " + str(file))
-                    shutil.copy(file.relative_to("."), json_file)
+                        print(json_file + " is identical to " + str(file))
+                    if replace:
+                        if loud:
+                            print("replaced contents of " + json_file + " with " + str(file))
+                        shutil.copy(file.relative_to("."), json_file)
+            else:
+                if compare_json(json_file, str(file)):
+                    if loud:
+                        print(json_file + " is identical to " + str(file))
+                    if replace:
+                        if loud:
+                            print("replaced contents of " + json_file + " with " + str(file))
+                        shutil.copy(file.relative_to("."), json_file)
 
 
 def create_unique_hash(json_dict) -> str:

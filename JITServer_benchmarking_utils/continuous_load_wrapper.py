@@ -99,12 +99,14 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--number_of_clients', required=True)
     parser.add_argument('-s', '--staggering_time_between_loads', required=True)
     parser.add_argument('-f', '--figure_name', required=False)
+    parser.add_argument('-oo' '--original_openj_path', required=True)
 
     args = vars(parser.parse_args())
 
     compiler_json_file = args['compiler_configuration']
     kernel_json_file = args['kernel_configuration']
     openj9_path = args['openj9_path']
+    original_openj9_path = args['original_openj_path']
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
     time_to_run = args['time_to_run']
@@ -113,6 +115,8 @@ if __name__ == "__main__":
     figure_name = args['figure_name']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
+    baseline_server_path = original_openj9_path + "/jitserver"
+    baseline_openj9_path = original_openj9_path + "/java"
     cmd = ''
 
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
@@ -183,6 +187,36 @@ if __name__ == "__main__":
         server.wait()
 
         print(f"{directories[i]} run done")
+    directories.append("baseline_server")
+
+    cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+    print("server command: " + cmd)
+    server = wait_for_server(cmd)
+    sp_directory = log_directory + f'/baseline_server'
+    Path(sp_directory).mkdir(parents=True, exist_ok=True)
+    shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
+    shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
+    now = str(Date.datetime.now())
+    now = now.replace(" ", ".").replace(":", "").replace("-", "")
+
+    for q in range(int(num_clients)):
+        Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
+        client_directory = f"{sp_directory}/client_{q}"
+        command = Process(target=start_continuous_load, args=(
+            baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
+            loud_output))
+        command.start()
+        clients.append(command)
+        time.sleep(float(staggering_time))
+    for client in clients:
+        client.join()
+
+    shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
+    server.kill()
+    server.wait()
+
+    print(f"baseline_server run done")
+
 
     # Do a final analysis of the results
     get_dir = log_directory

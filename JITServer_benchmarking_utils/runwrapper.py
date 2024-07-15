@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-m', '--number_of_clients', required=True)
-
+    parser.add_argument('-oo' '--original_openj_path', required=True)
 
     args = vars(parser.parse_args())
 
@@ -51,8 +51,11 @@ if __name__ == "__main__":
     loud_output = args['loud_output']
     num_runs = args['number_of_runs']
     num_clients = args['number_of_clients']
+    original_openj9_path = args['original_openj_path']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
+    baseline_server_path = original_openj9_path + "/jitserver"
+    baseline_openj9_path = original_openj9_path + "/java"
     cmd = ''
 
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
@@ -99,6 +102,16 @@ if __name__ == "__main__":
 
             print(f"{directories[q]} run {i} done")
 
+        print(f"baseline_server run {i}")
+        cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        print("server command: " + cmd)
+        proc = wait_for_server(cmd)
+        main_function(log_directory,compiler_json_file, kernel_json_file,baseline_openj9_path,bumblebench_jitserver_path,loud_output,f'{log_directory}/{directories[q]}', int(num_clients), i)
+        proc.kill()
+
+        print(f"baseline_server run {i} done")
+
+    directories.append("baseline_server")
 
     # Do a final analysis of the results
     print(f'Final analysis of results in {get_dir + "/report.csv"}')

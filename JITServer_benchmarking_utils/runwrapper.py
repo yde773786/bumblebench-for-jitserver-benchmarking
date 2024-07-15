@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-m', '--number_of_clients', required=True)
-    parser.add_argument('-oo' '--original_openj9_path', required=True)
+    parser.add_argument('-oo', '--original_openj9_path', required=True)
 
     args = vars(parser.parse_args())
 

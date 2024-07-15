@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-m', '--number_of_clients', required=True)
-    parser.add_argument('-oo' '--original_openj_path', required=True)
+    parser.add_argument('-oo' '--original_openj9_path', required=True)
 
     args = vars(parser.parse_args())
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     loud_output = args['loud_output']
     num_runs = args['number_of_runs']
     num_clients = args['number_of_clients']
-    original_openj9_path = args['original_openj_path']
+    original_openj9_path = args['original_openj9_path']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
     baseline_server_path = original_openj9_path + "/jitserver"

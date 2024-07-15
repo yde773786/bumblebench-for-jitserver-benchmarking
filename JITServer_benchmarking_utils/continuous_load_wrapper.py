@@ -99,14 +99,14 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--number_of_clients', required=True)
     parser.add_argument('-s', '--staggering_time_between_loads', required=True)
     parser.add_argument('-f', '--figure_name', required=False)
-    parser.add_argument('-oo' '--original_openj_path', required=True)
+    parser.add_argument('-oo' '--original_openj9_path', required=True)
 
     args = vars(parser.parse_args())
 
     compiler_json_file = args['compiler_configuration']
     kernel_json_file = args['kernel_configuration']
     openj9_path = args['openj9_path']
-    original_openj9_path = args['original_openj_path']
+    original_openj9_path = args['original_openj9_path']
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
     time_to_run = args['time_to_run']

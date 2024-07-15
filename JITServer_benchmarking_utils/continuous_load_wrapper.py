@@ -11,7 +11,7 @@ import time
 import subprocess
 from pathlib import Path
 import config_comparer
-
+import git
 
 def remove_empty_strings(lst) -> list:
     new_list = []
@@ -123,12 +123,18 @@ if __name__ == "__main__":
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time)
-    log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
 
     staggering_time_str = str(staggering_time)
     staggering_time_str = staggering_time_str.replace(".","p")
-    base_path = f'clw_clients_{num_clients}_stagger_{staggering_time_str}_run_time_{time_to_run}'
+
+    git_branch = git.Repo(os.pardir).active_branch.name
+    git_commit = git.Repo(os.pardir).git.rev_parse("HEAD")
+    base_path = f'clw_clients_{num_clients}_stagger_{staggering_time_str}_run_time_{time_to_run}_branch_{git_branch}_commit_{git_commit[:7]}'
     Path(base_path).mkdir(parents=True, exist_ok=True)
+    num_files = len(os.listdir(base_path))
+    log_hash_plus_info += str(num_files) + git_commit
+
+    log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
     log_directory = f'{base_path}/{log_directory}'
 
     Path(log_directory).mkdir(parents=True, exist_ok=True)
@@ -138,6 +144,8 @@ if __name__ == "__main__":
     cmd_options.write(f'number of clients: {num_clients}\n')
     cmd_options.write(f'initial staggering time between loads: {staggering_time}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
+    cmd_options.write(f'git branch: {git_branch}\n')
+    cmd_options.write(f'git commit: {git_commit}\n')
     cmd_options.close()
 
     # Run the normal server and the changed server in parallel

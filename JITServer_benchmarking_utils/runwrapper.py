@@ -106,7 +106,7 @@ if __name__ == "__main__":
         cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
         print("server command: " + cmd)
         proc = wait_for_server(cmd)
-        main_function(log_directory,compiler_json_file, kernel_json_file,baseline_openj9_path,bumblebench_jitserver_path,loud_output,f'{log_directory}/{directories[q]}', int(num_clients), i)
+        main_function(log_directory,compiler_json_file, kernel_json_file,baseline_openj9_path,bumblebench_jitserver_path,loud_output,f'{log_directory}/baseline_server', int(num_clients), i)
         proc.kill()
 
         print(f"baseline_server run {i} done")

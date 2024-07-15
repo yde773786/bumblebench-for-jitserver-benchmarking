@@ -59,8 +59,9 @@ if __name__ == "__main__":
     baseline_openj9_path = original_openj9_path + "/java"
     cmd = ''
 
-    git_branch = git.Repo(os.pardir).active_branch.name
-    git_commit = git.Repo(os.pardir).git.rev_parse("HEAD")
+    openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
+    git_branch = git.Repo(openj9_repo_path).active_branch.name
+    git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash

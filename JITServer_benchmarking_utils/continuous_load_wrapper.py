@@ -127,8 +127,9 @@ if __name__ == "__main__":
     staggering_time_str = str(staggering_time)
     staggering_time_str = staggering_time_str.replace(".","p")
 
-    git_branch = git.Repo(os.pardir).active_branch.name
-    git_commit = git.Repo(os.pardir).git.rev_parse("HEAD")
+    openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
+    git_branch = git.Repo(openj9_repo_path).active_branch.name
+    git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
     base_path = f'clw_clients_{num_clients}_stagger_{staggering_time_str}_run_time_{time_to_run}_branch_{git_branch}_commit_{git_commit[:7]}'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     num_files = len(os.listdir(base_path))

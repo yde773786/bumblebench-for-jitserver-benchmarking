@@ -89,7 +89,7 @@ if __name__ == "__main__":
         description="A Script that runs the individual continuous loads concurrently"
     )
 
-    parser.add_argument('-o', '--openj9_path', required=True)
+    parser.add_argument('-oa', '--openj9_path', required=True)
     parser.add_argument('-c', '--compiler_configuration', required=True)
     parser.add_argument('-b', '--bumblebench_jitserver_path', required=True)
     parser.add_argument('-l', '--loud_output', action='store_true')

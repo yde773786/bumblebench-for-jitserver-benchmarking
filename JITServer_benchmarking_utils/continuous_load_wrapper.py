@@ -132,7 +132,7 @@ if __name__ == "__main__":
     openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
     git_branch = git.Repo(openj9_repo_path).active_branch.name
     git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
-    base_path = f'clw_clients_{num_clients}_stagger_{staggering_time_str}_run_time_{time_to_run}_branch_{git_branch}_commit_{git_commit[:7]}'
+    base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     num_files = len(os.listdir(base_path))
     log_hash_plus_info += str(num_files) + git_commit
@@ -201,7 +201,7 @@ if __name__ == "__main__":
         print(f"{directories[i]} run done")
     directories.append("baseline_server")
 
-    cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+    cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     print("server command: " + cmd)
     server = wait_for_server(cmd)
     sp_directory = log_directory + f'/baseline_server'

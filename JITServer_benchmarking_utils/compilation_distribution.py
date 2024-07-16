@@ -1,0 +1,65 @@
+import argparse
+import pandas as pd
+import seaborn
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('TkAgg')
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog='runwrapper',
+        description="A Script that graphs a cdf function from data"
+    )
+
+    parser.add_argument('-d', '--data', required=True)
+    parser.add_argument('-f', '--figure_export_name', required=False)
+    parser.add_argument('-his', '--histogram', action='store_true')
+    args = vars(parser.parse_args())
+    total_data = args['data']
+    figure_export_name = args['figure_export_name']
+    histogram = args['histogram']
+    total_data = total_data.split(",")
+
+    data_frames = []
+    for data in total_data:
+        run = 0
+        data_wrapper = []
+        file_name = data.split('/')[-1]
+        file_name = file_name.replace(".csv", "")
+
+        with open(data, "r") as file:
+            for row in file:
+                if "#INFO:  Elapsed Time processing entry from client" in row:
+                    a = row.split('<')[2]
+                    b = a.split('>')[0]
+                    data_wrapper.append(float(b))
+        for i in range(len(total_data)):
+            df = pd.DataFrame({f'{data}:': data_wrapper})
+            data_frames.append(df)
+
+    both = pd.concat(data_frames, axis=1)
+    print(both)
+
+    if histogram:
+        for frame in data_frames:
+            plot = seaborn.displot(data=frame)
+            plt.title("Histogram of compilation times on the JITServer")
+            plt.xlabel("Completion time (s)")
+        if len(data_frames) > 1:
+            plot = seaborn.displot(data=both)
+            plt.title("Histogram of compilation times on the JITServer")
+            plt.xlabel("Completion time (s)")
+        fig = plot.fig
+        # fig.set_size_inches(3,3)
+        # fig.set_dpi(100)
+        if figure_export_name is not None:
+            fig.savefig(f'{figure_export_name}.png')
+        # plt.xlim(0, 0.05)
+
+    else:
+        plot = seaborn.ecdfplot(data=both)
+        fig = plot.get_figure()
+        plt.xlabel("Compilation time (s)")
+        if figure_export_name is not None:
+            fig.savefig(f'{figure_export_name}.png')
+    plt.show()

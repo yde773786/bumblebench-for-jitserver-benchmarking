@@ -94,12 +94,13 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--bumblebench_jitserver_path', required=True)
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
-    parser.add_argument('-t', '--time_to_run', required=True)
+    parser.add_argument('-ti', '--time_to_run', required=True)
 
     parser.add_argument('-n', '--number_of_clients', required=True)
     parser.add_argument('-s', '--staggering_time_between_loads', required=True)
     parser.add_argument('-f', '--figure_name', required=False)
     parser.add_argument('-oo', '--original_openj9_path', required=True)
+    parser.add_argument('th', '--thread_count', required=True)
 
     args = vars(parser.parse_args())
 
@@ -113,6 +114,7 @@ if __name__ == "__main__":
     num_clients = args['number_of_clients']
     staggering_time = args['staggering_time_between_loads']
     figure_name = args['figure_name']
+    thread_count = args['thread_count']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
     baseline_server_path = original_openj9_path + "/jitserver"
@@ -122,7 +124,7 @@ if __name__ == "__main__":
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
-    log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time)
+    log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time) + str(thread_count)
 
     staggering_time_str = str(staggering_time)
     staggering_time_str = staggering_time_str.replace(".","p")
@@ -144,6 +146,7 @@ if __name__ == "__main__":
     cmd_options.write(f'time clients run: {time_to_run}\n')
     cmd_options.write(f'number of clients: {num_clients}\n')
     cmd_options.write(f'initial staggering time between loads: {staggering_time}\n')
+    cmd_options.write(f'thread_count: {thread_count}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.write(f'git branch: {git_branch}\n')
     cmd_options.write(f'git commit: {git_commit}\n')
@@ -169,7 +172,7 @@ if __name__ == "__main__":
         if run_env_vars[i] is not None:
             os.environ[run_env_vars[i]] = 'true'
 
-        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         print("server command: " + cmd)
         server = wait_for_server(cmd)
         sp_directory = log_directory + f'/{directories[i]}'

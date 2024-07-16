@@ -42,6 +42,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--number_of_runs', required=True)
     parser.add_argument('-m', '--number_of_clients', required=True)
     parser.add_argument('-oo', '--original_openj9_path', required=True)
+    parser.add_argument('th', '--thread_count', required=True)
 
     args = vars(parser.parse_args())
 
@@ -53,6 +54,7 @@ if __name__ == "__main__":
     num_runs = args['number_of_runs']
     num_clients = args['number_of_clients']
     original_openj9_path = args['original_openj9_path']
+    thread_count =args['thread_count']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
     baseline_server_path = original_openj9_path + "/jitserver"
@@ -65,9 +67,9 @@ if __name__ == "__main__":
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
-    log_hash_plus_info = log_hash + str(num_runs) + str(num_clients)
+    log_hash_plus_info = log_hash + str(num_runs) + str(num_clients) + str(thread_count)
 
-    base_path = f'runwrapper_clients_{num_clients}_runs_{num_runs}_branch_{git_branch}_commit_{git_commit[:7]}'
+    base_path = f'rw_cli_{num_clients}_r_{num_runs}_br_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     num_files = len(os.listdir(base_path))
     log_hash_plus_info += str(num_files) + git_commit
@@ -79,6 +81,7 @@ if __name__ == "__main__":
     cmd_options = open(f'{log_directory}/command_line_options.txt', "w")
     cmd_options.write(f'number of runs: {num_runs}\n')
     cmd_options.write(f'number of clients: {num_clients}\n')
+    cmd_options.write(f'server thread count: {thread_count}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.write(f'git branch: {git_branch}\n')
     cmd_options.write(f'git commit: {git_commit}\n')
@@ -102,7 +105,7 @@ if __name__ == "__main__":
             if run_env_vars[q] is not None:
                 os.environ[run_env_vars[q]] = 'true'
             print(f"{directories[q]} run {i}")
-            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
             print("server command: " + cmd)
             proc = wait_for_server(cmd)
             main_function(log_directory,compiler_json_file, kernel_json_file,openj9_path,bumblebench_jitserver_path,loud_output,f'{log_directory}/{directories[q]}', int(num_clients), i)
@@ -111,7 +114,7 @@ if __name__ == "__main__":
             print(f"{directories[q]} run {i} done")
 
         print(f"baseline_server run {i}")
-        cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads1'
+        cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         print("server command: " + cmd)
         proc = wait_for_server(cmd)
         main_function(log_directory,compiler_json_file, kernel_json_file,baseline_openj9_path,bumblebench_jitserver_path,loud_output,f'{log_directory}/baseline_server', int(num_clients), i)

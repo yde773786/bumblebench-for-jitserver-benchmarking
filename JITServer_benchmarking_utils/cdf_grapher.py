@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
     data_frames = []
     directories = constants.directories
+    directories.append("baseline_server")
     if continuous_load_wrapper:
         for data in total_data:
             run = 0

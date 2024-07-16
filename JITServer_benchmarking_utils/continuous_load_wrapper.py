@@ -100,7 +100,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--staggering_time_between_loads', required=True)
     parser.add_argument('-f', '--figure_name', required=False)
     parser.add_argument('-oo', '--original_openj9_path', required=True)
-    parser.add_argument('th', '--thread_count', required=True)
+    parser.add_argument('-th', '--thread_count', required=True)
 
     args = vars(parser.parse_args())
 

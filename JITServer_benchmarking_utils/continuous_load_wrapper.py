@@ -42,48 +42,6 @@ def wait_for_server(cmd):
             proc.kill()  # Ensure the process is killed if it times out
             raise TimeoutError("JITServer did not start in time")
 
-def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
-                          log_directory, loud_output):
-    limit = Date.datetime.now() + Date.timedelta(seconds=int(time_to_run))
-
-    d_err = Path(f'{log_directory}/Error').mkdir(parents=True, exist_ok=True)
-    d_err = f'{log_directory}/Error'
-    d_out = Path(f'{log_directory}/Output').mkdir(parents=True, exist_ok=True)
-    d_out = f'{log_directory}/Output'
-    d_ver = Path(f'{log_directory}/Vlog').mkdir(parents=True, exist_ok=True)
-    d_ver = f'{log_directory}/Vlog'
-
-    i = 0
-
-    while Date.datetime.now() < limit:
-
-        now = str(Date.datetime.now())
-        now = now.replace(" ", ".").replace(":", "").replace("-", "")
-
-        if loud_output:
-            command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-            print("client command" + command)
-            command = command.replace("'", "")
-            command_splt = command.split(" ")
-            command_splt = remove_empty_strings(command_splt)
-            client_process = subprocess.Popen(command_splt)
-            client_process.wait()
-        else:
-            xjit_flags = change_vlog_directory(xjit_flags, d_ver)
-
-            f_err = open(f'{d_err}/error_file{i}.txt', "w")
-            f = open(f'{d_out}/output_file{i}.txt', "w")
-            command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-            print("client command" + command)
-            command = command.replace("'", "")
-            command_splt = command.split(" ")
-            command_splt = remove_empty_strings(command_splt)
-            client_process = subprocess.Popen(command_splt, stdout=f, stderr=f_err)
-            client_process.wait()
-
-        i += 1
-
-
 if __name__ == "__main__":
     os.environ['TR_Seed'] = str(0)
     parser = argparse.ArgumentParser(
@@ -191,13 +149,18 @@ if __name__ == "__main__":
         now = str(Date.datetime.now())
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
+        # Shenanigans to pass the arguments to start_continuous_load.py
+        arg = '한'.join([openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, str(time_to_run), sp_directory, str(loud_output), str(num_clients), str(staggering_time)])
+        arg = arg.replace(" ", "자")
+
         if num_clients_per_machine > 0:
             # Run the clients on the machines, distriubted evenly
             for machine in rc:
-                os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients_per_machine} {staggering_time}"')
+                os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
+                print(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
+                time.sleep(100)
         else:
-            # Run the clients on the local machine
-            os.system(f'python3 start_continuous_load.py {openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients} {staggering_time}')
+            os.system(f'python3 start_continuous_load.py {arg}')
 
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         server.kill()
@@ -216,13 +179,15 @@ if __name__ == "__main__":
     now = str(Date.datetime.now())
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
+    arg = '|'.join([baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, sp_directory, loud_output, num_clients, staggering_time])
+
     if num_clients_per_machine > 0:
         # Run the clients on the machines, distriubted evenly
         for machine in rc:
-            os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {original_openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients_per_machine} {staggering_time}"')
+            os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
     else:
         # Run the clients on the local machine
-        os.system(f'python3 start_continuous_load.py {original_openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients} {staggering_time}')
+        os.system(f'python3 start_continuous_load.py {arg}')
 
     shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     server.kill()

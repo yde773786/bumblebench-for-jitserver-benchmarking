@@ -44,6 +44,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             client_process.wait()
         else:
             xjit_flags = change_vlog_directory(xjit_flags, d_ver)
+            print(xjit_flags)
 
             f_err = open(f'{d_err}/error_file{i}.txt', "w")
             f = open(f'{d_out}/output_file{i}.txt', "w")
@@ -59,26 +60,44 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
 
 clients = []
 
-openj9_path = sys.argv[1]
-bumblebench_jitserver_path = sys.argv[2]
-xjit_flags = sys.argv[3]
-xaot_flags = sys.argv[4]
-other_flags = sys.argv[5]
-time_to_run = sys.argv[6]
-sp_directory = sys.argv[7]
-loud_output = sys.argv[8]
-num_clients = sys.argv[9]
-staggering_time = sys.argv[10]
+if __name__ == '__main__':
 
+    # print(sys.argv)
+    arg = sys.argv[1]
+    arg = arg.replace("자", " ")
+    arg = arg.split('한')
 
-for q in range(int(num_clients)):
-    Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
-    client_directory = f"{sp_directory}/client_{q}"
-    command = Process(target=start_continuous_load, args=(
-    openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-    loud_output))
-    command.start()
-    clients.append(command)
-    time.sleep(float(staggering_time))
-for client in clients:
-    client.join()
+    print(arg)
+    openj9_path = arg[0]
+    bumblebench_jitserver_path = arg[1]
+    xjit_flags = arg[2]
+    xaot_flags = arg[3]
+    other_flags = arg[4]
+    time_to_run = float(arg[5])
+    sp_directory = arg[6]
+    loud_output = True if arg[7] == "True" else False 
+    num_clients = int(arg[8])
+    staggering_time = float(arg[9])
+
+    # print(openj9_path)
+    # print(bumblebench_jitserver_path)
+    # print(xjit_flags)
+    # print(xaot_flags)
+    # print(other_flags)
+    # print(time_to_run)
+    # print(sp_directory)
+    # print(loud_output)
+    # print(num_clients)
+    # print(staggering_time)
+
+    for q in range(int(num_clients)):
+        Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
+        client_directory = f"{sp_directory}/client_{q}"
+        command = Process(target=start_continuous_load, args=(
+        openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
+        loud_output))
+        command.start()
+        clients.append(command)
+        time.sleep(float(staggering_time))
+    for client in clients:
+        client.join()

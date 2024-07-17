@@ -13,6 +13,8 @@ from pathlib import Path
 import config_comparer
 import git
 
+PATH_ON_MACHINE = "~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils"
+
 def remove_empty_strings(lst) -> list:
     new_list = []
     for i in lst:
@@ -95,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-ti', '--time_to_run', required=True)
-
+    parser.add_argument('-rc', '--run_clients_on_machines', nargs='+', required=False)
     parser.add_argument('-n', '--number_of_clients', required=True)
     parser.add_argument('-s', '--staggering_time_between_loads', required=True)
     parser.add_argument('-f', '--figure_name', required=False)
@@ -120,6 +122,13 @@ if __name__ == "__main__":
     baseline_server_path = original_openj9_path + "/jitserver"
     baseline_openj9_path = original_openj9_path + "/java"
     cmd = ''
+    rc = args['run_clients_on_machines']
+
+    num_clients_per_machine = 0
+
+    if rc is not None and len(rc) > 0:
+        num_clients_per_machine = int(num_clients) // len(rc)
+
 
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
@@ -182,17 +191,13 @@ if __name__ == "__main__":
         now = str(Date.datetime.now())
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
-        for q in range(int(num_clients)):
-            Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
-            client_directory = f"{sp_directory}/client_{q}"
-            command = Process(target=start_continuous_load, args=(
-            openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-            loud_output))
-            command.start()
-            clients.append(command)
-            time.sleep(float(staggering_time))
-        for client in clients:
-            client.join()
+        if num_clients_per_machine > 0:
+            # Run the clients on the machines, distriubted evenly
+            for machine in rc:
+                os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients_per_machine} {staggering_time}"')
+        else:
+            # Run the clients on the local machine
+            os.system(f'python3 start_continuous_load.py {openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients} {staggering_time}')
 
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         server.kill()
@@ -211,17 +216,13 @@ if __name__ == "__main__":
     now = str(Date.datetime.now())
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
-    for q in range(int(num_clients)):
-        Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
-        client_directory = f"{sp_directory}/client_{q}"
-        command = Process(target=start_continuous_load, args=(
-            baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-            loud_output))
-        command.start()
-        clients.append(command)
-        time.sleep(float(staggering_time))
-    for client in clients:
-        client.join()
+    if num_clients_per_machine > 0:
+        # Run the clients on the machines, distriubted evenly
+        for machine in rc:
+            os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {original_openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients_per_machine} {staggering_time}"')
+    else:
+        # Run the clients on the local machine
+        os.system(f'python3 start_continuous_load.py {original_openj9_path} {bumblebench_jitserver_path} {xjit_flags} {xaot_flags} {other_flags} {time_to_run} {sp_directory} {loud_output} {num_clients} {staggering_time}')
 
     shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     server.kill()

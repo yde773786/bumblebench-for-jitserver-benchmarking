@@ -57,6 +57,7 @@ def get_compiler_args(json_file, sp_directory):
             if strings[1] == "use_JIT_server":
                 if config[key]:
                     other_flags += "-XX:+UseJITServer "
+                    other_flags += "-XX:+RequireJITServer "
             elif strings[1] == "JIT_server_port":
                 other_flags += "-XX:JITServerPort=" + str(config[key]) + " "
             elif strings[1] == "JIT_server_address":

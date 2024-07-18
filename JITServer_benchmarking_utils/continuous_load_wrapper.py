@@ -156,8 +156,8 @@ if __name__ == "__main__":
         if num_clients_per_machine > 0:
             # Run the clients on the machines, distriubted evenly
             for machine in rc:
-                os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
-                print(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
+                os.system(f'ssh -o "StrictHostKeyChecking no" {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
+                print(f'ssh -o "StrictHostKeyChecking no" {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
         else:
             os.system(f'python3 start_continuous_load.py {arg}')
 

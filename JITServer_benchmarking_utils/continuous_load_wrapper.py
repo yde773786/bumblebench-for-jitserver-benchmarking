@@ -158,7 +158,6 @@ if __name__ == "__main__":
             for machine in rc:
                 os.system(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
                 print(f'ssh {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
-                time.sleep(100)
         else:
             os.system(f'python3 start_continuous_load.py {arg}')
 
@@ -179,7 +178,9 @@ if __name__ == "__main__":
     now = str(Date.datetime.now())
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
-    arg = '|'.join([baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, sp_directory, loud_output, num_clients, staggering_time])
+    # Shenanigans to pass the arguments to start_continuous_load.py
+    arg = '한'.join([baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, str(time_to_run), sp_directory, str(loud_output), str(num_clients), str(staggering_time)])
+    arg = arg.replace(" ", "자")
 
     if num_clients_per_machine > 0:
         # Run the clients on the machines, distriubted evenly

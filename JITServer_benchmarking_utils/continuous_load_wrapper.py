@@ -20,6 +20,12 @@ def remove_empty_strings(lst) -> list:
             new_list.append(i)
     return new_list
 
+import resource
+def using(point=""):
+    usage=resource.getrusage(resource.RUSAGE_SELF)
+    return '''%s: usertime=%s systime=%s mem=%s mb
+           '''%(point,usage[0],usage[1],
+                usage[2]/1024.0 )
 
 def wait_for_server(cmd):
     TIMEOUT = 20
@@ -59,8 +65,10 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
         if loud_output:
+
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             print("client command" + command)
+            print(using("memory"))
             command = command.replace("'", "")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)
@@ -73,6 +81,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             f = open(f'{d_out}/output_file{i}.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             print("client command" + command)
+            print(using("memory"))
             command = command.replace("'", "")
             command_splt = command.split(" ")
             command_splt = remove_empty_strings(command_splt)

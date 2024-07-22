@@ -35,7 +35,7 @@ def wait_for_server(cmd):
         if line:
             print(line)
         if line == "JITServer is ready to accept incoming requests":
-            return proc
+            return proc, server_read
         if Date.datetime.now() - current_time > Date.timedelta(seconds=TIMEOUT):
             proc.kill()  # Ensure the process is killed if it times out
             raise TimeoutError("JITServer did not start in time")
@@ -66,6 +66,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             command_splt = remove_empty_strings(command_splt)
             client_process = subprocess.Popen(command_splt)
             client_process.wait()
+
         else:
             xjit_flags = change_vlog_directory(xjit_flags, d_ver)
 
@@ -78,6 +79,8 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             command_splt = remove_empty_strings(command_splt)
             client_process = subprocess.Popen(command_splt, stdout=f, stderr=f_err)
             client_process.wait()
+            f_err.close()
+            f.close()
 
         i += 1
 
@@ -174,7 +177,7 @@ if __name__ == "__main__":
 
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         print("server command: " + cmd)
-        server = wait_for_server(cmd)
+        server, server_file = wait_for_server(cmd)
         sp_directory = log_directory + f'/{directories[i]}'
         Path(sp_directory).mkdir(parents=True, exist_ok=True)
         shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
@@ -193,17 +196,19 @@ if __name__ == "__main__":
             time.sleep(float(staggering_time))
         for client in clients:
             client.join()
+            client.close()
 
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         server.kill()
         server.wait()
+        server_file.close()
 
         print(f"{directories[i]} run done")
     directories.append("baseline_server")
 
     cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     print("server command: " + cmd)
-    server = wait_for_server(cmd)
+    server, server_file = wait_for_server(cmd)
     sp_directory = log_directory + f'/baseline_server'
     Path(sp_directory).mkdir(parents=True, exist_ok=True)
     shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
@@ -222,10 +227,12 @@ if __name__ == "__main__":
         time.sleep(float(staggering_time))
     for client in clients:
         client.join()
+        client.close()
 
     shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     server.kill()
     server.wait()
+    server_file.close()
 
     print(f"baseline_server run done")
 

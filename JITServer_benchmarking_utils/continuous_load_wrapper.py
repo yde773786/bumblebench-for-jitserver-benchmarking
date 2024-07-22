@@ -22,6 +22,7 @@ def remove_empty_strings(lst) -> list:
 
 import resource
 def using(point=""):
+    print(resource.getrlimit(resource.RLIMIT_NOFILE))
     usage=resource.getrusage(resource.RUSAGE_SELF)
     return '''%s: usertime=%s systime=%s mem=%s mb
            '''%(point,usage[0],usage[1],

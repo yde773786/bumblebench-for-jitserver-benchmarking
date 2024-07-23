@@ -194,7 +194,7 @@ if __name__ == "__main__":
         shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
         now = str(Date.datetime.now())
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
-
+        clients = []
         for q in range(int(num_clients)):
             Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
             client_directory = f"{sp_directory}/client_{q}"
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
     now = str(Date.datetime.now())
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
-
+    clients = []
     for q in range(int(num_clients)):
         Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
         client_directory = f"{sp_directory}/client_{q}"

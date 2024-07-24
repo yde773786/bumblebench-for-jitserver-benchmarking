@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path
 import config_comparer
 import git
+import docker_tools
 
 def remove_empty_strings(lst) -> list:
     new_list = []
@@ -42,10 +43,45 @@ def wait_for_server(cmd):
         if line:
             print(line)
         if line == "JITServer is ready to accept incoming requests":
-            return proc, server_read
+            return proc, server_read, server_vlog_file
         if Date.datetime.now() - current_time > Date.timedelta(seconds=TIMEOUT):
             proc.kill()  # Ensure the process is killed if it times out
             raise TimeoutError("JITServer did not start in time")
+
+def wait_for_docker_server(command, container):
+    TIMEOUT = 20
+    import multiprocessing
+    manager = multiprocessing.Manager()
+    return_stream = manager.list()
+    docker_server = Process(target=start_docker_server, args=(command, return_stream, container))
+    docker_server.start()
+    docker_server.join(timeout=TIMEOUT)
+    docker_server.close()
+    if docker_server.exitcode != 0:
+        raise TimeoutError("JITServer did not start in time")
+    read_server_vlog = Process(target=read_more_vlog, args=(return_stream[0]))
+
+    return read_server_vlog
+
+
+def start_docker_server(cmd, return_stream, container):
+    server_vlog_file = open("servervlog.txt", "w")
+    stream = docker_tools.execute_container_commmand(container,cmd)[1]
+    return_stream.append(stream)
+    while True:
+        line = stream.readline().strip()
+        server_vlog_file.write(line)
+        if line == "JITServer is ready to accept incoming requests":
+            server_vlog_file.close()
+            return
+
+
+def read_more_vlog(stream):
+    server_vlog_file = open("servervlog.txt", "a")
+    while True:
+        line = stream.readline().strip()
+        server_vlog_file.write(line)
+
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
                           log_directory, loud_output):
@@ -106,6 +142,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--compiler_configuration', required=True)
     parser.add_argument('-b', '--bumblebench_jitserver_path', required=True)
     parser.add_argument('-l', '--loud_output', action='store_true')
+    parser.add_argument('-d', '--docker', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-ti', '--time_to_run', required=True)
 
@@ -123,6 +160,7 @@ if __name__ == "__main__":
     original_openj9_path = args['original_openj9_path']
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
+    use_docker = args['docker']
     time_to_run = args['time_to_run']
     num_clients = args['number_of_clients']
     staggering_time = args['staggering_time_between_loads']
@@ -142,15 +180,18 @@ if __name__ == "__main__":
     staggering_time_str = str(staggering_time)
     staggering_time_str = staggering_time_str.replace(".","p")
 
-    openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
-    git_branch = git.Repo(openj9_repo_path).active_branch.name
-    git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
-    base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
+    if not use_docker:
+        openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
+        git_branch = git.Repo(openj9_repo_path).active_branch.name
+        git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
+        base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
+    else:
+        base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_docker_tc_{thread_count}'
+
     Path(base_path).mkdir(parents=True, exist_ok=True)
     num_files = len(os.listdir(base_path))
-    log_hash_plus_info += str(num_files) + git_commit
 
-    log_directory = config_comparer.create_hash_from_str(log_hash_plus_info)
+    log_directory = str(num_files)
     log_directory = f'{base_path}/{log_directory}'
 
     Path(log_directory).mkdir(parents=True, exist_ok=True)
@@ -161,8 +202,10 @@ if __name__ == "__main__":
     cmd_options.write(f'initial staggering time between loads: {staggering_time}\n')
     cmd_options.write(f'thread_count: {thread_count}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
-    cmd_options.write(f'git branch: {git_branch}\n')
-    cmd_options.write(f'git commit: {git_commit}\n')
+    if use_docker is False:
+        cmd_options.write(f'git branch: {git_branch}\n')
+        cmd_options.write(f'git commit: {git_commit}\n')
+    cmd_options.write(f'num files at time: {num_files}\n')
     cmd_options.close()
 
     # Run the normal server and the changed server in parallel
@@ -177,6 +220,9 @@ if __name__ == "__main__":
     run_env_vars = constants.run_env_vars
     directories = constants.directories
 
+    if use_docker:
+        container = docker_tools.start_container()
+
     for i in range(len(run_env_vars)):
         print(f'{directories[i]} run')
         for var in run_env_vars:
@@ -187,7 +233,10 @@ if __name__ == "__main__":
 
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         print("server command: " + cmd)
-        server, server_file = wait_for_server(cmd)
+        if use_docker is False:
+            server, server_file, server_file_2 = wait_for_server(cmd)
+        else:
+            server_vlog = wait_for_docker_server(cmd, container)
         sp_directory = log_directory + f'/{directories[i]}'
         Path(sp_directory).mkdir(parents=True, exist_ok=True)
         shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
@@ -209,16 +258,25 @@ if __name__ == "__main__":
             client.close()
 
         shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
-        server.kill()
-        server.wait()
-        server_file.close()
+        if use_docker is False:
+            server.kill()
+            server.wait()
+            server_file.close()
+            server_file_2.close()
+        else:
+            server_vlog.close()
+            docker_tools.execute_container_commmand('pkill jitserver')
+
 
         print(f"{directories[i]} run done")
     directories.append("baseline_server")
 
     cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     print("server command: " + cmd)
-    server, server_file = wait_for_server(cmd)
+    if use_docker is False:
+        server, server_file, server_file_2 = wait_for_server(cmd)
+    else:
+        server, server_file, server_file_2 = wait_for_docker_server(cmd, container)
     sp_directory = log_directory + f'/baseline_server'
     Path(sp_directory).mkdir(parents=True, exist_ok=True)
     shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
@@ -242,7 +300,10 @@ if __name__ == "__main__":
     shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     server.kill()
     server.wait()
-    server_file.close()
+    if server_file is not None:
+        server_file.close()
+    if server_file_2 is not None:
+        server_file_2.close()
 
     print(f"baseline_server run done")
 

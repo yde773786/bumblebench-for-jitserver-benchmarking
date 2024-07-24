@@ -51,23 +51,23 @@ def wait_for_server(cmd):
 def wait_for_docker_server(command, container):
     TIMEOUT = 20
     import multiprocessing
-    manager = multiprocessing.Manager()
-    return_stream = manager.dict()
-    docker_server = Process(target=start_docker_server, args=(command, return_stream, container))
+    queue = multiprocessing.Queue()
+    docker_server = Process(target=start_docker_server, args=(command, queue, container))
     docker_server.start()
     docker_server.join(timeout=TIMEOUT)
     docker_server.close()
     if docker_server.exitcode != 0:
         raise TimeoutError("JITServer did not start in time")
-    read_server_vlog = Process(target=read_more_vlog, args=(return_stream['stream']))
+    read_server_vlog = Process(target=read_more_vlog, args=(queue.get()))
+
 
     return read_server_vlog
 
 
-def start_docker_server(cmd, return_stream, container):
+def start_docker_server(cmd, queue, container):
     server_vlog_file = open("servervlog.txt", "w")
     stream = docker_tools.execute_container_commmand(container,cmd)[1]
-    return_stream['stream'] = stream
+    queue.put(stream)
     while True:
         line = stream.readline().strip()
         server_vlog_file.write(line)

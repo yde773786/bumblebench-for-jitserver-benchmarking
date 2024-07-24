@@ -22,6 +22,9 @@ def remove_empty_strings(lst) -> list:
             new_list.append(i)
     return new_list
 
+def per_machine_run(machine_name, arg_passed):
+    os.system(f'ssh -o "StrictHostKeyChecking no" {machine_name} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg_passed}"')
+    print(f'ssh -o "StrictHostKeyChecking no" {machine_name} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg_passed}"')
 
 def wait_for_server(cmd):
     TIMEOUT = 20
@@ -150,14 +153,19 @@ if __name__ == "__main__":
         now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
         # Shenanigans to pass the arguments to start_continuous_load.py
-        arg = '한'.join([openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, str(time_to_run), sp_directory, str(loud_output), str(num_clients), str(staggering_time)])
+        arg = '한'.join([openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, str(time_to_run), sp_directory, str(loud_output), str(num_clients_per_machine), str(staggering_time)])
         arg = arg.replace(" ", "자")
 
         if num_clients_per_machine > 0:
+            runs = []
             # Run the clients on the machines, distriubted evenly
             for machine in rc:
-                os.system(f'ssh -o "StrictHostKeyChecking no" {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
-                print(f'ssh -o "StrictHostKeyChecking no" {machine} "cd {PATH_ON_MACHINE} ; python3 start_continuous_load.py {arg}"')
+                p = Process(target=per_machine_run, args=(machine, arg))
+                runs.append(p)
+                p.start()
+
+            for p in runs:
+                p.join()
         else:
             os.system(f'python3 start_continuous_load.py {arg}')
 
@@ -179,7 +187,7 @@ if __name__ == "__main__":
     now = now.replace(" ", ".").replace(":", "").replace("-", "")
 
     # Shenanigans to pass the arguments to start_continuous_load.py
-    arg = '한'.join([baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, str(time_to_run), sp_directory, str(loud_output), str(num_clients), str(staggering_time)])
+    arg = '한'.join([baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, str(time_to_run), sp_directory, str(loud_output), str(num_clients_per_machine), str(staggering_time)])
     arg = arg.replace(" ", "자")
 
     if num_clients_per_machine > 0:

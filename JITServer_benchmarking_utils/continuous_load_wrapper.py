@@ -54,33 +54,21 @@ def wait_for_docker_server(command, container):
     queue = Queue()
     docker_server = Process(target=start_docker_server, args=(command, queue, container))
     docker_server.start()
-    docker_server.join(timeout=TIMEOUT)
-    docker_server.close()
-    if docker_server.exitcode != 0:
-        raise TimeoutError("JITServer did not start in time")
-    read_server_vlog = Process(target=read_more_vlog, args=(queue.get()))
 
-
-    return read_server_vlog
+    while True:
+        line = queue.get()
+        if line == "JITServer is ready to accept incoming requests":
+            return docker_server
 
 
 def start_docker_server(cmd, queue, container):
     server_vlog_file = open("servervlog.txt", "w")
     stream = docker_tools.execute_container_commmand(container,cmd)[1]
-    queue.put(stream)
+
     while True:
         line = stream.readline().strip()
         server_vlog_file.write(line)
-        if line == "JITServer is ready to accept incoming requests":
-            server_vlog_file.close()
-            return
-
-
-def read_more_vlog(stream):
-    server_vlog_file = open("servervlog.txt", "a")
-    while True:
-        line = stream.readline().strip()
-        server_vlog_file.write(line)
+        queue.put(line)
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,

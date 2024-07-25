@@ -59,7 +59,7 @@ def wait_for_docker_server(command, container):
     while True:
         line = queue.get()
         # print(f'queue size: {queue.qsize()}')
-        print(f'socket line: {line}')
+
         if "JITServer is ready to accept incoming requests" in line:
             return docker_server
 
@@ -75,6 +75,7 @@ def start_docker_server(cmd, queue, container):
         if b'#' in line:
             line = line.split(b'#')[1]
         queue.put(line.decode())
+        print(f'socket line: {line.decode()}')
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,

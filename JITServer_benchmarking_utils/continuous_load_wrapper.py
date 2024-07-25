@@ -230,8 +230,10 @@ if __name__ == "__main__":
         else:
             for var in run_env_vars:
                 if var is not None:
+                    print(f'export {var}=false')
                     docker_tools.execute_container_commmand(container,f'export {var}=false')
             if run_env_vars[i] is not None:
+                print(f'export {run_env_vars[i]}=true')
                 docker_tools.execute_container_commmand(container,f'export {run_env_vars[i]}=true')
             #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
             time.sleep(10)

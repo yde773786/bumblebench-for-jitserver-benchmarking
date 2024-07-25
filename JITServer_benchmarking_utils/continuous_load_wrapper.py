@@ -75,7 +75,7 @@ def start_docker_server(cmd, queue, container):
         # if b'#' in line:
         #     line = line.split(b'#')[1]
         queue.put(line)
-        print(f'socket line: {line}')
+        #print(f'socket line: {line}')
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,

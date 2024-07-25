@@ -67,11 +67,14 @@ def wait_for_docker_server(command, container):
 def start_docker_server(cmd, queue, container):
     queue.empty()
     server_vlog_file = open("servervlog.txt", "wb")
-    stream = docker_tools.execute_container_commmand(container,cmd)[1]
+    stream_out,stream_err = docker_tools.execute_container_commmand(container,cmd)[1]
 
     while True:
-        line = stream.readline()
+        line = stream_out.readline()
+        err_line = stream_err.readline()
         server_vlog_file.write(line)
+        server_vlog_file.write(err_line)
+        print(err_line)
         if b'#' in line:
             line = line.split(b'#')[1]
         queue.put(line.decode())

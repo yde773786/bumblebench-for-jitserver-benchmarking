@@ -57,7 +57,7 @@ def wait_for_docker_server(command, container):
 
     while True:
         line = queue.get()
-        print(line)
+        print(line.decode("utf-8"))
         if line == "JITServer is ready to accept incoming requests":
             return docker_server
 

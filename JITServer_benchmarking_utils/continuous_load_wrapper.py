@@ -256,7 +256,8 @@ if __name__ == "__main__":
             server_file.close()
             server_file_2.close()
         else:
-            server_vlog.terminate()
+            server_vlog.kill()
+            server_vlog.join()
             server_vlog.close()
             docker_tools.execute_container_commmand('pkill jitserver')
 

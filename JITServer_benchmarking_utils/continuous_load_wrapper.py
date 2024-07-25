@@ -62,7 +62,7 @@ def wait_for_docker_server(command, container):
 
 
 def start_docker_server(cmd, queue, container):
-    server_vlog_file = open("servervlog.txt", "w")
+    server_vlog_file = open("servervlog.txt", "wb")
     stream = docker_tools.execute_container_commmand(container,cmd)[1]
 
     while True:

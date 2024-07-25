@@ -239,7 +239,7 @@ if __name__ == "__main__":
             server_path = "/root/servers/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         if use_docker:
-            cmd = f'{cmd} -XX:JITServerAddress={ipaddress}'
+            other_flags = f'{other_flags} -XX:JITServerAddress={ipaddress}'
         print("server command: " + cmd)
         if use_docker is False:
             server, server_file, server_file_2 = wait_for_server(cmd)

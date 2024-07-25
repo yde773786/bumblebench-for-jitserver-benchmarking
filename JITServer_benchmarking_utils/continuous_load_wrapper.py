@@ -68,9 +68,9 @@ def start_docker_server(cmd, queue, container):
     while True:
         line = stream.readline()
         server_vlog_file.write(line)
-        print(line)
-        print(line.decode())
-        queue.put(line)
+        if "#" in line:
+            line = line.split(b'#')[1]
+        queue.put(line.decode())
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,

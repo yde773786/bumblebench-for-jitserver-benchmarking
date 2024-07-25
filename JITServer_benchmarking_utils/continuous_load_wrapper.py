@@ -52,7 +52,7 @@ def wait_for_docker_server(command, container):
     TIMEOUT = 20
 
     queue = Queue()
-    queue.empty()
+
     docker_server = Process(target=start_docker_server, args=(command, queue, container))
     docker_server.start()
 
@@ -64,6 +64,7 @@ def wait_for_docker_server(command, container):
 
 
 def start_docker_server(cmd, queue, container):
+    queue.empty()
     server_vlog_file = open("servervlog.txt", "wb")
     stream = docker_tools.execute_container_commmand(container,cmd)[1]
 

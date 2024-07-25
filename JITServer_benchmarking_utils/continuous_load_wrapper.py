@@ -181,6 +181,7 @@ if __name__ == "__main__":
         git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
     else:
+        docker_tools.verify_basic_jitserver_active()
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_docker_tc_{thread_count}'
 
     Path(base_path).mkdir(parents=True, exist_ok=True)

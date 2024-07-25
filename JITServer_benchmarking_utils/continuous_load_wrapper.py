@@ -57,7 +57,7 @@ def wait_for_docker_server(command, container):
 
     while True:
         line = queue.get()
-        if "JITServer is ready to accept incoming requests" in line.decode():
+        if "JITServer is ready to accept incoming requests" in line:
             return docker_server
 
 
@@ -68,6 +68,7 @@ def start_docker_server(cmd, queue, container):
     while True:
         line = stream.readline().strip()
         server_vlog_file.write(line)
+        print(line.decode())
         queue.put(line)
 
 

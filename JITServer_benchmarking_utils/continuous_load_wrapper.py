@@ -260,7 +260,8 @@ if __name__ == "__main__":
             server_vlog.kill()
             server_vlog.join()
             server_vlog.close()
-            docker_tools.execute_container_commmand(container,'pkill jitserver')
+
+            #docker_tools.execute_container_commmand(container,'pkill jitserver')
 
 
         print(f"{directories[i]} run done")

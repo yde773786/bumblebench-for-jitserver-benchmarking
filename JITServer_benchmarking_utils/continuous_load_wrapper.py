@@ -215,10 +215,6 @@ if __name__ == "__main__":
     run_env_vars = constants.run_env_vars
     directories = constants.directories
 
-    if use_docker:
-        container = docker_tools.start_container()
-        container.reload()
-        ipaddress = container.attrs['NetworkSettings']['IPAddress']
     for i in range(len(run_env_vars)):
         print(f'{directories[i]} run')
         if not use_docker:
@@ -228,15 +224,17 @@ if __name__ == "__main__":
             if run_env_vars[i] is not None:
                 os.environ[run_env_vars[i]] = 'true'
         else:
+            docker_env_vars = dict()
             for var in run_env_vars:
                 if var is not None:
-                    print(f'export {var}=false')
-                    docker_tools.execute_container_commmand(container,f'export {var}=false')
+                    docker_env_vars[var] = 'false'
             if run_env_vars[i] is not None:
-                print(f'export {run_env_vars[i]}=true')
-                docker_tools.execute_container_commmand(container,f'export {run_env_vars[i]}=true')
+                docker_env_vars[run_env_vars[i]] = 'true'
             #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
             time.sleep(10)
+            container = docker_tools.start_container(docker_env_vars)
+            container.reload()
+            ipaddress = container.attrs['NetworkSettings']['IPAddress']
         if use_docker:
             server_path = "/root/servers/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
@@ -283,11 +281,17 @@ if __name__ == "__main__":
             error_stream = docker_tools.execute_container_commmand(container,'cat /root/servererror.txt')
             for line in error_stream:
                 print(line)
-
+            container.kill()
+            container.wait()
+            container.remove()
 
         print(f"{directories[i]} run done")
     directories.append("baseline_server")
+
     if use_docker:
+        container = docker_tools.start_container(dict())
+        container.reload()
+        ipaddress = container.attrs['NetworkSettings']['IPAddress']
         baseline_server_path = "/root/servers/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
     cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     if use_docker:
@@ -330,6 +334,9 @@ if __name__ == "__main__":
         docker_tools.execute_container_commmand(container,'pkill jitserver')
         #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
         time.sleep(10)
+        container.kill()
+        container.wait()
+        container.remove()
 
     print(f"baseline_server run done")
 

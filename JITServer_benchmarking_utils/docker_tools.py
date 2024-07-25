@@ -1,7 +1,7 @@
 import docker
 
 
-def start_container():
+def start_container(env_vars):
     #TODO Assert basic jitserver in client.images.list()
     #TODO assert openj9_volume is valid
     client = docker.from_env()
@@ -10,7 +10,7 @@ def start_container():
                'vlog_volume': {'bind': '/root/vlogs', 'mode': 'rw'}}
 
     container = client.containers.run("basic_jitserver", name="jitserver_host", volumes=volumes,
-                                      cpuset_cpus="1", detach=True, tty=True)
+                                      cpuset_cpus="1", detach=True, tty=True, environment=env_vars)
     return container
 
 

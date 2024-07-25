@@ -20,7 +20,7 @@ def view_container_logs(container):
 
 
 def execute_container_commmand(container, command):
-    return container.exec_run(command, socket=True)
+    return container.exec_run(command, socket=True, privileged=True)
 
 
 if __name__ == "__main__":

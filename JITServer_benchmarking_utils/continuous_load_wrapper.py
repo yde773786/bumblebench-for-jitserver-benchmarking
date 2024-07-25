@@ -217,7 +217,8 @@ if __name__ == "__main__":
 
     if use_docker:
         container = docker_tools.start_container()
-
+        container.reload()
+        ipaddress = container.attrs['NetworkSettings']['IPAddress']
     for i in range(len(run_env_vars)):
         print(f'{directories[i]} run')
         if not use_docker:
@@ -238,7 +239,7 @@ if __name__ == "__main__":
             server_path = "/root/servers/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         if use_docker:
-            cmd = f'{cmd} -XX:JITServerAddress=dockerhost'
+            cmd = f'{cmd} -XX:JITServerAddress={ipaddress}'
         print("server command: " + cmd)
         if use_docker is False:
             server, server_file, server_file_2 = wait_for_server(cmd)
@@ -288,7 +289,7 @@ if __name__ == "__main__":
         baseline_server_path = "/root/servers/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
     cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     if use_docker:
-        cmd = f'{cmd} -XX:JITServerAddress=dockerhost'
+        cmd = f'{cmd} -XX:JITServerAddress={ipaddress}'
     print("server command: " + cmd)
     if use_docker is False:
         server, server_file, server_file_2 = wait_for_server(cmd)

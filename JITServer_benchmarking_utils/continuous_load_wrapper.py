@@ -52,6 +52,7 @@ def wait_for_docker_server(command, container):
     TIMEOUT = 20
 
     queue = Queue()
+    queue.empty()
     docker_server = Process(target=start_docker_server, args=(command, queue, container))
     docker_server.start()
 

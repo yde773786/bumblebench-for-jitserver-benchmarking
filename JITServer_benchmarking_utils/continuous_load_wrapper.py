@@ -58,7 +58,7 @@ def wait_for_docker_server(command, container):
 
     while True:
         line = queue.get()
-        print(f'queue size: {queue.qsize()}')
+        # print(f'queue size: {queue.qsize()}')
         print(f'socket line: {line}')
         if "JITServer is ready to accept incoming requests" in line:
             return docker_server
@@ -264,7 +264,7 @@ if __name__ == "__main__":
             server_vlog.join()
             server_vlog.close()
             docker_tools.execute_container_commmand(container,'pkill jitserver')
-            time.sleep(2)
+            time.sleep(10)
 
 
         print(f"{directories[i]} run done")
@@ -276,7 +276,7 @@ if __name__ == "__main__":
     if use_docker is False:
         server, server_file, server_file_2 = wait_for_server(cmd)
     else:
-        server, server_file, server_file_2 = wait_for_docker_server(cmd, container)
+        server_vlog = wait_for_docker_server(cmd, container)
     sp_directory = log_directory + f'/baseline_server'
     Path(sp_directory).mkdir(parents=True, exist_ok=True)
     shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
@@ -298,12 +298,17 @@ if __name__ == "__main__":
         client.close()
 
     shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
-    server.kill()
-    server.wait()
-    if server_file is not None:
+    if use_docker is False:
+        server.kill()
+        server.wait()
         server_file.close()
-    if server_file_2 is not None:
         server_file_2.close()
+    else:
+        server_vlog.kill()
+        server_vlog.join()
+        server_vlog.close()
+        docker_tools.execute_container_commmand(container,'pkill jitserver')
+        time.sleep(2)
 
     print(f"baseline_server run done")
 

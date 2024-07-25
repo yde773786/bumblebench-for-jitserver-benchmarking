@@ -68,7 +68,7 @@ def start_docker_server(cmd, queue, container):
     while True:
         line = stream.readline()
         server_vlog_file.write(line)
-        if "#" in line:
+        if b'#' in line:
             line = line.split(b'#')[1]
         queue.put(line.decode())
 

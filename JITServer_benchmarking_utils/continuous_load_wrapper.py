@@ -3,7 +3,7 @@ import os
 import datetime as Date
 import shutil
 from multiprocessing import Process
-
+from multiprocessing import Queue
 import constants
 from compiler_config import get_compiler_args, change_vlog_directory
 from kernel_config import setup_kernel_args
@@ -50,8 +50,8 @@ def wait_for_server(cmd):
 
 def wait_for_docker_server(command, container):
     TIMEOUT = 20
-    import multiprocessing
-    queue = multiprocessing.Queue()
+
+    queue = Queue()
     docker_server = Process(target=start_docker_server, args=(command, queue, container))
     docker_server.start()
     docker_server.join(timeout=TIMEOUT)

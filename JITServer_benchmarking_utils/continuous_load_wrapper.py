@@ -60,7 +60,7 @@ def wait_for_docker_server(command, container):
         line = queue.get()
         # print(f'queue size: {queue.qsize()}')
 
-        if "JITServer is ready to accept incoming requests" in line:
+        if b'JITServer is ready to accept incoming requests' in line:
             return docker_server
 
 

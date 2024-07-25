@@ -221,6 +221,8 @@ if __name__ == "__main__":
         if run_env_vars[i] is not None:
             os.environ[run_env_vars[i]] = 'true'
 
+        if use_docker:
+            server_path = "/root/servers/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         print("server command: " + cmd)
         if use_docker is False:
@@ -260,7 +262,8 @@ if __name__ == "__main__":
 
         print(f"{directories[i]} run done")
     directories.append("baseline_server")
-
+    if use_docker:
+        baseline_server_path = "/root/servers/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
     cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     print("server command: " + cmd)
     if use_docker is False:

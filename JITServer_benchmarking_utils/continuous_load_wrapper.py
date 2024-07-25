@@ -67,7 +67,7 @@ def wait_for_docker_server(command, container):
 def start_docker_server(cmd, queue, container):
     queue.empty()
     server_vlog_file = open("servervlog.txt", "wb")
-    stream = docker_tools.execute_container_commmand(container,f'{cmd} 2>&1')[1]
+    stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
 
     while True:
         line = stream.readline()

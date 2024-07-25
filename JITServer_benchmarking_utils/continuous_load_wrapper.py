@@ -66,8 +66,9 @@ def start_docker_server(cmd, queue, container):
     stream = docker_tools.execute_container_commmand(container,cmd)[1]
 
     while True:
-        line = stream.readline().strip()
+        line = stream.readline()
         server_vlog_file.write(line)
+        print(line)
         print(line.decode())
         exit()
         queue.put(line)

@@ -22,7 +22,18 @@ def view_container_logs(container):
 def execute_container_commmand(container, command):
     return container.exec_run(command, socket=True, privileged=True)
 
+def verify_basic_jitserver_active():
+    pass
 
 if __name__ == "__main__":
     client = docker.from_env()
     print(client.images.list())
+    try:
+        image = client.images.get("basic_jitserver")
+        print("image found")
+    except docker.errors.ImageNotFound:
+        print("image not found, building...")
+        client.images.build(path="JITServer",tag="basic_jitserver")
+        print("build complete")
+
+    

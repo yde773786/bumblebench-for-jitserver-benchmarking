@@ -219,12 +219,20 @@ if __name__ == "__main__":
 
     for i in range(len(run_env_vars)):
         print(f'{directories[i]} run')
-        for var in run_env_vars:
-            if var is not None:
-                os.environ[var] = 'false'
-        if run_env_vars[i] is not None:
-            os.environ[run_env_vars[i]] = 'true'
-
+        if not use_docker:
+            for var in run_env_vars:
+                if var is not None:
+                    os.environ[var] = 'false'
+            if run_env_vars[i] is not None:
+                os.environ[run_env_vars[i]] = 'true'
+        else:
+            for var in run_env_vars:
+                if var is not None:
+                    docker_tools.execute_container_commmand(container,f'export {run_env_vars[var]}=false')
+            if run_env_vars[i] is not None:
+                docker_tools.execute_container_commmand(container,f'export {run_env_vars[i]}=true')
+            #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
+            time.sleep(10)
         if use_docker:
             server_path = "/root/servers/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'

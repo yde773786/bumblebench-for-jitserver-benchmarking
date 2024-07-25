@@ -67,8 +67,6 @@ def wait_for_docker_server(command, container):
 def start_docker_server(cmd, queue, container):
     queue.empty()
     server_vlog_file = open("servervlog.txt", "wb")
-    print(f'{cmd} 2>/root/servererror.txt')
-    exit()
     stream = docker_tools.execute_container_commmand(container,f'{cmd} >>/root/servererror.txt')[1]
 
     while True:

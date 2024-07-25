@@ -67,7 +67,7 @@ def wait_for_docker_server(command, container):
 def start_docker_server(cmd, queue, container):
     queue.empty()
     server_vlog_file = open("servervlog.txt", "wb")
-    stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
+    stream = docker_tools.execute_container_commmand(container,f'{cmd} 2>/root/servererror.txt')[1]
 
     while True:
         line = stream.readline()
@@ -274,6 +274,9 @@ if __name__ == "__main__":
             docker_tools.execute_container_commmand(container,'pkill jitserver')
             #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
             time.sleep(10)
+            error_stream = docker_tools.execute_container_commmand(container,'cat /root/servererror.txt')
+            for line in error_stream:
+                print(line)
 
 
         print(f"{directories[i]} run done")

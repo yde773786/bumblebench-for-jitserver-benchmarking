@@ -264,6 +264,7 @@ if __name__ == "__main__":
             server_vlog.join()
             server_vlog.close()
             docker_tools.execute_container_commmand(container,'pkill jitserver')
+            #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
             time.sleep(10)
 
 
@@ -308,7 +309,8 @@ if __name__ == "__main__":
         server_vlog.join()
         server_vlog.close()
         docker_tools.execute_container_commmand(container,'pkill jitserver')
-        time.sleep(2)
+        #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
+        time.sleep(10)
 
     print(f"baseline_server run done")
 

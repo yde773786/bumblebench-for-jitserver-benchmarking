@@ -6,6 +6,18 @@ import matplotlib
 import constants
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "figure.constrained_layout.use": True,
+    "figure.figsize": (3.0, 2.25),
+    "font.size": 12,
+    "hatch.linewidth": 0.5,
+    "legend.fontsize": 12,
+    "legend.framealpha": 0.5,
+    "lines.linewidth": 1.0,
+    "lines.markersize": 4.0,
+    "savefig.dpi": 300,
+})
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='runwrapper',
@@ -82,7 +94,9 @@ if __name__ == "__main__":
                 data_frames.append(df)
 
     both = pd.concat(data_frames, axis=1)
+
     print(both)
+    print(both.count())
     if histogram:
         for frame in data_frames:
             plot = seaborn.displot(data=frame)

@@ -79,7 +79,7 @@ def start_docker_server(cmd, queue, container):
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
-                          log_directory, loud_output):
+                          log_directory, loud_output,renaissance):
     limit = Date.datetime.now() + Date.timedelta(seconds=int(time_to_run))
 
     d_err = Path(f'{log_directory}/Error').mkdir(parents=True, exist_ok=True)
@@ -99,6 +99,8 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
         if loud_output:
 
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+            if renaissance:
+                command = f'{openj9_path} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
             print("client command" + command)
             print(using("memory"))
             command = command.replace("'", "")
@@ -113,6 +115,8 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             f_err = open(f'{d_err}/error_file{i}.txt', "w")
             f = open(f'{d_out}/output_file{i}.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
+            if renaissance:
+                command = f'{openj9_path} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
             print("client command" + command)
             print(using("memory"))
             command = command.replace("'", "")
@@ -138,6 +142,7 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--bumblebench_jitserver_path', required=True)
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-d', '--docker', action='store_true')
+    parser.add_argument('-ren', '--renaissance', action='store_true')
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-ti', '--time_to_run', required=True)
 
@@ -161,6 +166,7 @@ if __name__ == "__main__":
     staggering_time = args['staggering_time_between_loads']
     figure_name = args['figure_name']
     thread_count = args['thread_count']
+    renaissance = args['renaissance']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
     baseline_server_path = original_openj9_path + "/jitserver"
@@ -258,7 +264,7 @@ if __name__ == "__main__":
             client_directory = f"{sp_directory}/client_{q}"
             command = Process(target=start_continuous_load, args=(
             openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-            loud_output))
+            loud_output,renaissance))
             command.start()
             clients.append(command)
             time.sleep(float(staggering_time))
@@ -314,7 +320,7 @@ if __name__ == "__main__":
         client_directory = f"{sp_directory}/client_{q}"
         command = Process(target=start_continuous_load, args=(
             baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-            loud_output))
+            loud_output, renaissance))
         command.start()
         clients.append(command)
         time.sleep(float(staggering_time))

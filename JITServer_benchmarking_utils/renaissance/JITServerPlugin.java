@@ -1,5 +1,3 @@
-package JITServer_benchmarking_utils.renaissance;
-
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.time.Instant;

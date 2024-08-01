@@ -100,7 +100,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
 
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             if renaissance:
-                command = f'{openj9_path} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
+                command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
             print("client command" + command)
             print(using("memory"))
             command = command.replace("'", "")
@@ -116,7 +116,7 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             f = open(f'{d_out}/output_file{i}.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
             if renaissance:
-                command = f'{openj9_path} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
+                command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
             print("client command" + command)
             print(using("memory"))
             command = command.replace("'", "")

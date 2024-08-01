@@ -99,8 +99,8 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
         if loud_output:
 
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-            if renaissance:
-                command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
+            if renaissance is not None:
+                command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar {renaissance}'
             print("client command" + command)
             print(using("memory"))
             command = command.replace("'", "")
@@ -115,8 +115,8 @@ def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, x
             f_err = open(f'{d_err}/error_file{i}.txt', "w")
             f = open(f'{d_out}/output_file{i}.txt', "w")
             command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar {bumblebench_jitserver_path}/BumbleBench.jar JITserver'
-            if renaissance:
-                command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar all'
+            if renaissance is not None:
+                command = f'{openj9_path} {xjit_flags} {xaot_flags} {other_flags} -jar /renaissance/renaissance.jar --plugin /renaissance/JITServerPlugin.jar {renaissance}'
             print("client command" + command)
             print(using("memory"))
             command = command.replace("'", "")
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--bumblebench_jitserver_path', required=True)
     parser.add_argument('-l', '--loud_output', action='store_true')
     parser.add_argument('-d', '--docker', action='store_true')
-    parser.add_argument('-ren', '--renaissance', action='store_true')
+    parser.add_argument('-ren', '--renaissance', required=False)
     parser.add_argument('-k', '--kernel_configuration', required=True)
     parser.add_argument('-ti', '--time_to_run', required=True)
 

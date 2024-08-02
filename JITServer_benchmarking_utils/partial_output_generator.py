@@ -11,7 +11,6 @@ def generate_report_renaissance(directories, per_client_report_file, total_data,
             for key in inner_dict.keys():
                 results = inner_dict[key]["results"]
                 for j in range(len(results)):
-                    print(results)
                     time = round(float(results[j]["duration_ns"])/1000000000,2)
                     per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {time}\n")
 

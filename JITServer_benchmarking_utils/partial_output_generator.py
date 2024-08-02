@@ -1,7 +1,18 @@
 import argparse
+import json
 import os
 
 import constants
+def generate_report_renaissance(directories, per_client_report_file, total_data, num_clients):
+    for q in range(len(directories)):
+        for i in range(int(num_clients)):
+            results_json = json.load(open(total_data + f'/{directories[q]}/client_{i}/Output/out.json', 'r'))
+            inner_dict = results_json["data"]
+            for key in inner_dict.keys():
+                results = inner_dict[key]
+                for j in range(len(results)):
+                    time = round(float(results[j]["duration_ns"])/1000000000,2)
+                    per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {time}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -11,24 +22,33 @@ if __name__ == "__main__":
 
     parser.add_argument('-d', '--data', required=True)
     parser.add_argument('-clw', '--continuous_load_wrapper', action='store_true')
+    parser.add_argument('-ren', '--renaissance', action='store_true')
     args = vars(parser.parse_args())
     total_data = args['data']
+    renaissance = args['renaissance']
     continuous_load_wrapper = args['continuous_load_wrapper']
 
     directories = constants.directories
     if continuous_load_wrapper:
-        per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
-        per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
-        files_in_dir = os.listdir(total_data + f'/{directories[0]}')
-        clients_in_dir = [k for k in files_in_dir if "client" in k]
-        for q in range(len(directories)):
-            for i in range(int(len(clients_in_dir))):
-                for j, output_file in enumerate(os.listdir(total_data + f'/{directories[q]}/client_{i}/Output')):
-                    normal_file = open(total_data + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
-                    lines = normal_file.readlines()
-                    if len(lines) > 2 and "The calculation took" in lines[-2]:
-                        normal_elapsed_time = round(int(lines[-2].split()[4]) / (10 ** 9), 2)
-                        per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
+        if renaissance:
+            per_client_report_file = open(total_data + '/report_per_client.csv', 'w')
+            per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
+            files_in_dir = os.listdir(total_data + f'/{directories[0]}')
+            clients_in_dir = [k for k in files_in_dir if "client" in k]
+            generate_report_renaissance(directories,per_client_report_file, total_data, clients_in_dir)
+        else:
+            per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
+            per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
+            files_in_dir = os.listdir(total_data + f'/{directories[0]}')
+            clients_in_dir = [k for k in files_in_dir if "client" in k]
+            for q in range(len(directories)):
+                for i in range(int(len(clients_in_dir))):
+                    for j, output_file in enumerate(os.listdir(total_data + f'/{directories[q]}/client_{i}/Output')):
+                        normal_file = open(total_data + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
+                        lines = normal_file.readlines()
+                        if len(lines) > 2 and "The calculation took" in lines[-2]:
+                            normal_elapsed_time = round(int(lines[-2].split()[4]) / (10 ** 9), 2)
+                            per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
     else:
         per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
 

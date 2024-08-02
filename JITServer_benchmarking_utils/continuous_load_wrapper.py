@@ -13,6 +13,7 @@ from pathlib import Path
 import config_comparer
 import git
 import docker_tools
+from partial_output_generator import generate_report_renaissance
 
 def remove_empty_strings(lst) -> list:
     new_list = []
@@ -357,13 +358,15 @@ if __name__ == "__main__":
     per_client_report_file = open(get_dir + '/report_per_client.csv', 'w')
     per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
 
-    for q in range(len(directories)):
-        for i in range(int(num_clients)):
-            for j, output_file in enumerate(os.listdir(get_dir + f'/{directories[q]}/client_{i}/Output')):
-                normal_file = open(get_dir + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
-                normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
-                per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
-
+    if renaissance is None:
+        for q in range(len(directories)):
+            for i in range(int(num_clients)):
+                for j, output_file in enumerate(os.listdir(get_dir + f'/{directories[q]}/client_{i}/Output')):
+                    normal_file = open(get_dir + f'/{directories[q]}/client_{i}/Output/output_file{j}.txt', 'r')
+                    normal_elapsed_time = round(int(normal_file.readlines()[-2].split()[4]) / (10 ** 9), 2)
+                    per_client_report_file.write(f"{directories[q]}, {i + 1}, {j + 1}, {normal_elapsed_time}\n")
+    else:
+        generate_report_renaissance(directories, per_client_report_file, get_dir, num_clients)
     per_client_report_file.close()
     cmd = ''
     if figure_name is not None:

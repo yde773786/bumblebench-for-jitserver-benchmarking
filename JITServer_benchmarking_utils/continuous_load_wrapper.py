@@ -177,6 +177,8 @@ if __name__ == "__main__":
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
+    if renaissance is not None:
+        log_hash += renaissance
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time) + str(thread_count)
 
     staggering_time_str = str(staggering_time)
@@ -187,10 +189,12 @@ if __name__ == "__main__":
         git_branch = git.Repo(openj9_repo_path).active_branch.name
         git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
+
     else:
         docker_tools.verify_basic_jitserver_active()
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_docker_tc_{thread_count}'
-
+    if renaissance is not None:
+        base_path += f'_renaissance_{renaissance}'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     num_files = len(os.listdir(base_path))
 
@@ -205,6 +209,7 @@ if __name__ == "__main__":
     cmd_options.write(f'initial staggering time between loads: {staggering_time}\n')
     cmd_options.write(f'thread_count: {thread_count}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
+    cmd_options.write(f'renaissance: {renaissance}\n')
     if use_docker is False:
         cmd_options.write(f'git branch: {git_branch}\n')
         cmd_options.write(f'git commit: {git_commit}\n')

@@ -35,7 +35,7 @@ if __name__ == "__main__":
             per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
             files_in_dir = os.listdir(total_data + f'/{directories[0]}')
             clients_in_dir = [k for k in files_in_dir if "client" in k]
-            generate_report_renaissance(directories,per_client_report_file, total_data, clients_in_dir)
+            generate_report_renaissance(directories,per_client_report_file, total_data, len(clients_in_dir))
         else:
             per_client_report_file = open(total_data + '/manual_report_per_client.csv', 'w')
             per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")

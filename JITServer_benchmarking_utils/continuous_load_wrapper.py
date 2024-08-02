@@ -194,7 +194,7 @@ if __name__ == "__main__":
         docker_tools.verify_basic_jitserver_active()
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_docker_tc_{thread_count}'
     if renaissance is not None:
-        base_path += f'_renaissance_{renaissance}'
+        base_path += f'_renaissance'
     Path(base_path).mkdir(parents=True, exist_ok=True)
     num_files = len(os.listdir(base_path))
 

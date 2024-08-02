@@ -9,7 +9,7 @@ def generate_report_renaissance(directories, per_client_report_file, total_data,
             results_json = json.load(open(total_data + f'/{directories[q]}/client_{i}/Output/out.json', 'r'))
             inner_dict = results_json["data"]
             for key in inner_dict.keys():
-                results = inner_dict[key]
+                results = inner_dict[key]["results"]
                 for j in range(len(results)):
                     print(results)
                     time = round(float(results[j]["duration_ns"])/1000000000,2)

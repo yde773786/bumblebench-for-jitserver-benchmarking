@@ -199,8 +199,11 @@ if __name__ == "__main__":
         git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
     else:
+        openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
+        git_branch = git.Repo(openj9_repo_path).active_branch.name
+        git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
         docker_tools.verify_basic_jitserver_active()
-        base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_docker_tc_{thread_count}'
+        base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_docker_tc_{thread_count}'
     if renaissance is not None:
         base_path += f'_renaissance'
     Path(base_path).mkdir(parents=True, exist_ok=True)
@@ -218,9 +221,8 @@ if __name__ == "__main__":
     cmd_options.write(f'thread_count: {thread_count}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.write(f'renaissance: {renaissance}\n')
-    if use_docker is False:
-        cmd_options.write(f'git branch: {git_branch}\n')
-        cmd_options.write(f'git commit: {git_commit}\n')
+    cmd_options.write(f'git branch: {git_branch}\n')
+    cmd_options.write(f'git commit: {git_commit}\n')
     cmd_options.write(f'num files at time: {num_files}\n')
     cmd_options.close()
 

@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
-    "figure.figsize": (3.0, 2.25),
+    "figure.figsize": (12.0, 10.25),
     "font.size": 12,
     "hatch.linewidth": 0.5,
     "legend.fontsize": 12,
@@ -114,5 +114,6 @@ if __name__ == "__main__":
         plt.xlabel("Completion time (s)")
         if figure_export_name is not None:
             fig.savefig(f'{figure_export_name}.png')
-    plt.show()
+    if figure_export_name is None:
+        plt.show()
 

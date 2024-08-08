@@ -68,8 +68,8 @@ class RunRenaissanceDockerSweep(Runner):
         self.commands = [f'cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 continuous_load_wrapper.py -oa ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -oo ~/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n {num_clients[i]} -s {stagger_time[i]} -ti {run_time[i]} -th {num_threads[i]} -ren "{renaisance_args[i]}" -d' for i in range(len(machines))]
 
     def run(self):
-        super().run()
-
+        #super().run()
+        Path('analytics').mkdir(parents=True, exist_ok=True)
         if self.get_analytics:
             Path("~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics").mkdir(parents=True, exist_ok=True)
             for machine in self.machines:
@@ -79,13 +79,17 @@ class RunRenaissanceDockerSweep(Runner):
                         split = line.split("<")[1]
                         split = split.split(">")[0]
                         machine_dir = split.replace("/", "_")
-                        machine_dir = f'~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics/{machine_dir}'
+                        machine_dir = f'analytics/{machine_dir}'
                         Path(machine_dir).mkdir(parents=True, exist_ok=True)
 
                         subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/report_per_client.csv {machine_dir}", text=True, shell=True)
                         for server_folder in directories:
                             subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/{server_folder}/servervlog* {machine_dir}/{server_folder}_servervlog", text=True, shell=True)
 
+                        subprocess.call(f"python3 ../../cdf_grapher.py -d report_per_client.csv -clw -f cdf_comp_times", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../temperature_histogram.py fcfs_server_servervlog temperature_histogram", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../compilation_distribution.py -d fcfs_server_servervlog -f cdf_comp_dist", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../compilation_distribution.py -d fcfs_server_servervlog -f histogram_comp_dist -his", text=True, shell=True, cwd=machine_dir)
 
 class ClearContainers(Runner):
 
@@ -101,18 +105,17 @@ class ClearContainers(Runner):
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
-    runner = KillAllProcesses('richardkha')
-    runner.run()
-    runner = ClearContainers()
-    runner.run()
+    # runner = KillAllProcesses('richardkha')
+    # runner.run()
+    # runner = ClearContainers()
+    # runner.run()
     # runner = MakeOpenJ9('quickInfoGetterThreaded')
     # runner.run()
     # runner = MakeBaselineOpenJ9()
     # runner.run()
-    runner = UpdateBenchmarkingUtils('dockertools')
-    runner.run()
-    machine = ['mel-19']
-    runner = RunRenaissanceDockerSweep([3], [0.5], [2], [63], ['-r 1 als'], machines=machine, get_analytics=True)
+    # runner = UpdateBenchmarkingUtils('dockertools')
+    # runner.run()
+    runner = RunRenaissanceDockerSweep([5,10,20,50,100], [0.5,0.5,0.5,0.5,0.5], [2,2,2,2,2], [63,63,63,63,63], ['-r 10 als','-r 10 als','-r 10 als','-r 10 als','-r 10 als'], get_analytics=True)
     runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############

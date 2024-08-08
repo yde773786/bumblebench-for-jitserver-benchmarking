@@ -27,33 +27,39 @@ class Runner:
     
 class KillAllProcesses(Runner):
 
-    def __init__(self, user):
+    def __init__(self, user, machines=MACHINES):
         super().__init__()
-        self.machines = MACHINES
-        self.commands = [f"pkill -u {user}"] * len(MACHINES)
+        self.machines = machines
+        self.commands = [f"pkill -u {user}"] * len(machines)
 
 class MakeOpenJ9(Runner):
 
-    def __init__(self, branch):
+    def __init__(self, branch, machines=MACHINES):
         super().__init__()
-        self.machines = MACHINES
-        self.commands = [f"cd ~/openj9-openjdk-jdk17/; cd openj9; git stash; git fetch; git checkout {branch}; git pull origin {branch}; cd ..; make clean; make all"] * len(MACHINES)
+        self.machines = machines
+        self.commands = [f"cd ~/openj9-openjdk-jdk17/; cd openj9; git stash; git fetch; git checkout {branch}; git pull origin {branch}; cd ..; make clean; make all"] * len(machines)
 
 class UpdateBenchmarkingUtils(Runner):
 
-    def __init__(self, branch):
+    def __init__(self, branch, machines=MACHINES):
         super().__init__()
-        self.machines = MACHINES
-        self.commands = [f"cd ~/bumblebench-for-jitserver-benchmarking; git stash; git fetch; git checkout {branch}; git pull origin {branch}"] * len(MACHINES)
+        self.machines = machines
+        self.commands = [f"cd ~/bumblebench-for-jitserver-benchmarking; git stash; git fetch; git checkout {branch}; git pull origin {branch}"] * len(machines)
 
 
 class RunRenaissanceDockerSweep(Runner):
 
-    def __init__(self, num_clients, stagger_time, run_time, num_threads, renaisance_args):
+    def __init__(self, num_clients, stagger_time, run_time, num_threads, renaisance_args, machines=MACHINES, get_analytics=False):
         super().__init__()
-        self.machines = MACHINES
-        self.commands = [f'cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 continuous_load_wrapper.py -oa ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -oo ~/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n {num_clients[i]} -s {stagger_time[i]} -ti {run_time[i]} -th {num_threads[i]} -ren "{renaisance_args[i]}" -d' for i in range(len(MACHINES))]
+        self.machines = machines
+        self.run_analytics = get_analytics
+        self.commands = [f'cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 continuous_load_wrapper.py -oa ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -oo ~/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n {num_clients[i]} -s {stagger_time[i]} -ti {run_time[i]} -th {num_threads[i]} -ren "{renaisance_args[i]}" -d' for i in range(len(machines))]
 
+    def run(self):
+        super().run()
+
+        if self.get_analytics:
+            ...
 
 if __name__ == '__main__':
 

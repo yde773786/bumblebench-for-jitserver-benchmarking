@@ -61,6 +61,10 @@ class RunRenaissanceDockerSweep(Runner):
         if self.get_analytics:
             ...
 
+############# DEFINE YOUR PERSONAL RUNNERS HERE. DO NOT COMMIT #############
+
+#######################################################################
+
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
@@ -72,4 +76,7 @@ if __name__ == '__main__':
     # runner.run()
     # runner = RunRenaissanceDockerSweep([10, 10, 10, 10, 10], [0.5, 0.5, 0.5, 0.5, 0.5], [6000, 6000, 6000, 6000, 6000], [63, 63, 63, 63, 63], ['-r 10 als', '-r 10 als', '-r 10 als', '-r 10 als', '-r 10 als'])
     # runner.run()
+
+    ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############
     ...
+    #######################################################################

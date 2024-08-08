@@ -39,6 +39,13 @@ class MakeOpenJ9(Runner):
         self.machines = machines
         self.commands = [f"cd ~/openj9-openjdk-jdk17/; cd openj9; git stash; git fetch; git checkout {branch}; git pull origin {branch}; cd ..; make clean; make all"] * len(machines)
 
+class MakeBaselineOpenJ9(Runner):
+
+    def __init__(self, machines=MACHINES):
+        super().__init__()
+        self.machines = machines
+        self.commands = [f"cd ~/baseline_openj9; cd openj9-openjdk-jdk17/; cd openj9; git stash; git fetch; git checkout pure_fcfs; git pull origin pure_fcfs; cd ..; make clean; make all"] * len(machines)
+
 class UpdateBenchmarkingUtils(Runner):
 
     def __init__(self, branch, machines=MACHINES):
@@ -70,7 +77,9 @@ if __name__ == '__main__':
     # Enter your configuration here. Below is an example
     # runner = KillAllProcesses('user')
     # runner.run()
-    # runner = MakeOpenJ9('master')
+    # runner = MakeOpenJ9('quickInfoGetterThreaded')
+    # runner.run()
+    # runner = MakeBaselineOpenJ9()
     # runner.run()
     # runner = UpdateBenchmarkingUtils('dockertools')
     # runner.run()

@@ -82,10 +82,17 @@ class RunRenaissanceDockerSweep(Runner):
                         machine_dir = f'~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics/{machine_dir}'
                         Path(machine_dir).mkdir(parents=True, exist_ok=True)
 
-                        subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/report_per_client.csv {machine_dir}", stdout=file_name, stderr=subprocess.STDOUT, text=True, shell=True)
+                        subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/report_per_client.csv {machine_dir}", text=True, shell=True)
                         for server_folder in directories:
-                            subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/{server_folder}/servervlog* {machine_dir}/{server_folder}_servervlog", stdout=file_name, stderr=subprocess.STDOUT, text=True, shell=True)
+                            subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/{server_folder}/servervlog* {machine_dir}/{server_folder}_servervlog", text=True, shell=True)
 
+
+class ClearContainers(Runner):
+
+    def __init__(self, machines=MACHINES):
+        super().__init__()
+        self.machines = machines
+        self.commands = [f"docker kill $(docker ps -q); docker remove $(docker ps -q -a)"] * len(machines)
 
 ############# DEFINE YOUR PERSONAL RUNNERS HERE. DO NOT COMMIT #############
 
@@ -95,6 +102,8 @@ if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
     runner = KillAllProcesses('richardkha')
+    runner.run()
+    runner = ClearContainers()
     runner.run()
     # runner = MakeOpenJ9('quickInfoGetterThreaded')
     # runner.run()

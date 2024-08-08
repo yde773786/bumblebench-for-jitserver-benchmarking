@@ -66,6 +66,4 @@ if __name__ == '__main__':
     # runner.run()
     # runner = RunRenaissanceDockerSweep([10, 10, 10, 10, 10], [0.5, 0.5, 0.5, 0.5, 0.5], [6000, 6000, 6000, 6000, 6000], [63, 63, 63, 63, 63], ['-r 10 als', '-r 10 als', '-r 10 als', '-r 10 als', '-r 10 als'])
     # runner.run()
-
-    runner = KillAllProcesses('nsreekumar')
-    runner.run()
+    ...

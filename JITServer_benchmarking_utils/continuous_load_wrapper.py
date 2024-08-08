@@ -61,22 +61,31 @@ def wait_for_docker_server(command, container):
         line = queue.get()
         # print(f'queue size: {queue.qsize()}')
 
-        if b'JITServer is ready to accept incoming requests' in line:
+        if "MetricsServer waiting for http requests" in line:
+            time.sleep(1)
             return docker_server
-
 
 def start_docker_server(cmd, queue, container):
     queue.empty()
-    server_vlog_file = open("servervlog.txt", "wb")
-    stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
-
+    paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
+    for path in paths:
+        os.remove(path)
+    #server_vlog_file = open("servervlog.txt", "wb")
+    #stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
+    docker_tools.execute_container_commmand(container,f'{cmd}')
+    time.sleep(2)
+    paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
+    server_read = open(paths[0], "r")
+    time.sleep(2)
     while True:
-        line = stream.readline()
-        server_vlog_file.write(line)
-        # if b'#' in line:
-        #     line = line.split(b'#')[1]
-        queue.put(line)
-        #print(f'socket line: {line}')
+        line = server_read.readline().strip()
+        if line:
+            #print(line)
+            #server_vlog_file.write(line)
+            # if b'#' in line:
+            #     line = line.split(b'#')[1]
+            queue.put(line)
+            #print(f'socket line: {line}')
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
@@ -189,7 +198,6 @@ if __name__ == "__main__":
         git_branch = git.Repo(openj9_repo_path).active_branch.name
         git_commit = git.Repo(openj9_repo_path).git.rev_parse("HEAD")
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_b_{git_branch}_com_{git_commit[:7]}_tc_{thread_count}'
-
     else:
         docker_tools.verify_basic_jitserver_active()
         base_path = f'clw_cli_{num_clients}_sta_{staggering_time_str}_rt_{time_to_run}_docker_tc_{thread_count}'
@@ -249,14 +257,17 @@ if __name__ == "__main__":
             container.reload()
             ipaddress = container.attrs['NetworkSettings']['IPAddress']
         if use_docker:
-            server_path = "/root/servers/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
+            server_path = "/root/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         if use_docker:
             other_flags = f'{other_flags} -XX:JITServerAddress={ipaddress}'
-        print("server command: " + cmd)
+
         if use_docker is False:
+            print("server command: " + cmd)
             server, server_file, server_file_2 = wait_for_server(cmd)
         else:
+            cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=/root/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/temp_clw_files/servervlogfile,highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
+            print("server command: " + cmd)
             server_vlog = wait_for_docker_server(cmd, container)
         sp_directory = log_directory + f'/{directories[i]}'
         Path(sp_directory).mkdir(parents=True, exist_ok=True)
@@ -278,13 +289,16 @@ if __name__ == "__main__":
             client.join()
             client.close()
 
-        shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
+
         if use_docker is False:
+            shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
             server.kill()
             server.wait()
             server_file.close()
             server_file_2.close()
         else:
+            paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
+            shutil.copy(paths[0], sp_directory + f'/servervlog_file.{now}')
             server_vlog.kill()
             server_vlog.join()
             server_vlog.close()
@@ -309,10 +323,12 @@ if __name__ == "__main__":
     cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
     if use_docker:
         cmd = f'{cmd} -XX:JITServerAddress={ipaddress}'
-    print("server command: " + cmd)
     if use_docker is False:
+        print("server command: " + cmd)
         server, server_file, server_file_2 = wait_for_server(cmd)
     else:
+        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=/root/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/temp_clw_files/servervlogfile,highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
+        print("server command: " + cmd)
         server_vlog = wait_for_docker_server(cmd, container)
     sp_directory = log_directory + f'/baseline_server'
     Path(sp_directory).mkdir(parents=True, exist_ok=True)
@@ -334,13 +350,15 @@ if __name__ == "__main__":
         client.join()
         client.close()
 
-    shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
     if use_docker is False:
+        shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
         server.kill()
         server.wait()
         server_file.close()
         server_file_2.close()
     else:
+        paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
+        shutil.copy(paths[0], sp_directory + f'/servervlog_file.{now}')
         server_vlog.kill()
         server_vlog.join()
         server_vlog.close()

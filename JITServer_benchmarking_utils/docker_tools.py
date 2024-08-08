@@ -5,12 +5,12 @@ def start_container(env_vars):
     #TODO Assert basic jitserver in client.images.list()
     #TODO assert openj9_volume is valid
     client = docker.from_env()
-
-    volumes = {'openj9_volume': {'bind': '/root/servers', 'mode': 'rw'},
+    import os
+    volumes = {os.environ['HOME']: {'bind': '/root', 'mode': 'rw'},
                'vlog_volume': {'bind': '/root/vlogs', 'mode': 'rw'}}
 
     container = client.containers.run("basic_jitserver", name="jitserver_host", volumes=volumes,
-                                      cpuset_cpus="1", detach=True, tty=True, environment=env_vars)
+                                      cpuset_cpus="1", detach=True, tty=True, environment=env_vars, user=os.getuid())
     return container
 
 
@@ -35,6 +35,10 @@ def verify_basic_jitserver_active():
         print("build complete")
 
 if __name__ == "__main__":
-    verify_basic_jitserver_active()
+    #verify_basic_jitserver_active()
+    #start_container(dict())
+    from pathlib import Path
+    paths = list(Path('.').glob('temp/*'))
+    print(paths)
 
     

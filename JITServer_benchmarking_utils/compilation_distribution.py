@@ -29,7 +29,8 @@ if __name__ == "__main__":
 
         with open(data, "r") as file:
             for row in file:
-                if "#INFO:  Elapsed Time processing entry from client" in row:
+                if "Elapsed Time processing entry from client" in row:
+                    print(row)
                     a = row.split('<')[2]
                     b = a.split('>')[0]
                     data_wrapper.append(float(b))

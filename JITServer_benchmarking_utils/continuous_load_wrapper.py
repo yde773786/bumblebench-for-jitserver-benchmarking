@@ -226,6 +226,7 @@ if __name__ == "__main__":
     cmd_options.write(f'num files at time: {num_files}\n')
     cmd_options.close()
 
+    Path("~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/temp_clw_files").mkdir(parents=True, exist_ok=True)
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
 
@@ -383,6 +384,7 @@ if __name__ == "__main__":
     per_client_report_file = open(get_dir + '/report_per_client.csv', 'w')
     per_client_report_file.write("Server, Client, Run, Elapsed Time(s)\n")
 
+    print(f'LOCATION OF DIRECTORY: <{get_dir}>')
     if renaissance is None:
         for q in range(len(directories)):
             for i in range(int(num_clients)):

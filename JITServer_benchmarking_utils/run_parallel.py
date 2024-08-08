@@ -1,6 +1,8 @@
 from multiprocessing import Process
 import os
-
+import subprocess
+from pathlib import Path
+from constants import directories
 MACHINES = ['mel-19', 'mel-20', 'mel-22', 'mel-25', 'mel-26']
 COMMANDS = []
 
@@ -13,7 +15,10 @@ class Runner:
     @staticmethod
     def run_on_machine(machine, command):
         print(f"Running: ssh {machine} '{command}'")
-        os.system(f"ssh {machine} '{command}'")
+        file_name = f'server_vlog_{machine}.txt'
+        server_vlog_file = open(file_name, "w")
+        subprocess.call(f"ssh {machine} '{command}'", stdout=server_vlog_file, stderr=subprocess.STDOUT, text=True, shell=True)
+        server_vlog_file.close()
 
     def run(self):
         processes = []
@@ -59,14 +64,28 @@ class RunRenaissanceDockerSweep(Runner):
     def __init__(self, num_clients, stagger_time, run_time, num_threads, renaisance_args, machines=MACHINES, get_analytics=False):
         super().__init__()
         self.machines = machines
-        self.run_analytics = get_analytics
+        self.get_analytics = get_analytics
         self.commands = [f'cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 continuous_load_wrapper.py -oa ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -oo ~/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n {num_clients[i]} -s {stagger_time[i]} -ti {run_time[i]} -th {num_threads[i]} -ren "{renaisance_args[i]}" -d' for i in range(len(machines))]
 
     def run(self):
         super().run()
 
         if self.get_analytics:
-            ...
+            Path("~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics").mkdir(parents=True, exist_ok=True)
+            for machine in self.machines:
+                file = open(f'server_vlog_{machine}.txt', "r")
+                for line in file:
+                    if "LOCATION OF DIRECTORY" in line:
+                        split = line.split("<")[1]
+                        split = split.split(">")[0]
+                        machine_dir = split.replace("/", "_")
+                        machine_dir = f'~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics/{machine_dir}'
+                        Path(machine_dir).mkdir(parents=True, exist_ok=True)
+
+                        subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/report_per_client.csv {machine_dir}", stdout=file_name, stderr=subprocess.STDOUT, text=True, shell=True)
+                        for server_folder in directories:
+                            subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/{server_folder}/servervlog* {machine_dir}/{server_folder}_servervlog", stdout=file_name, stderr=subprocess.STDOUT, text=True, shell=True)
+
 
 ############# DEFINE YOUR PERSONAL RUNNERS HERE. DO NOT COMMIT #############
 
@@ -83,8 +102,9 @@ if __name__ == '__main__':
     # runner.run()
     # runner = UpdateBenchmarkingUtils('dockertools')
     # runner.run()
-    # runner = RunRenaissanceDockerSweep([10, 10, 10, 10, 10], [0.5, 0.5, 0.5, 0.5, 0.5], [6000, 6000, 6000, 6000, 6000], [63, 63, 63, 63, 63], ['-r 10 als', '-r 10 als', '-r 10 als', '-r 10 als', '-r 10 als'])
-    # runner.run()
+    machine = ['mel-19']
+    runner = RunRenaissanceDockerSweep([3], [0.5], [2], [63], ['-r 1 als'], machines=machine, get_analytics=True)
+    runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############
     ...

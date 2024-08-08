@@ -94,14 +94,14 @@ class RunRenaissanceDockerSweep(Runner):
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
-    # runner = KillAllProcesses('user')
-    # runner.run()
+    runner = KillAllProcesses('richardkha')
+    runner.run()
     # runner = MakeOpenJ9('quickInfoGetterThreaded')
     # runner.run()
     # runner = MakeBaselineOpenJ9()
     # runner.run()
-    # runner = UpdateBenchmarkingUtils('dockertools')
-    # runner.run()
+    runner = UpdateBenchmarkingUtils('dockertools')
+    runner.run()
     machine = ['mel-19']
     runner = RunRenaissanceDockerSweep([3], [0.5], [2], [63], ['-r 1 als'], machines=machine, get_analytics=True)
     runner.run()

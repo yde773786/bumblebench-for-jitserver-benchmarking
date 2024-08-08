@@ -226,7 +226,7 @@ if __name__ == "__main__":
     cmd_options.write(f'num files at time: {num_files}\n')
     cmd_options.close()
 
-    Path("~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/temp_clw_files").mkdir(parents=True, exist_ok=True)
+    Path("temp_clw_files").mkdir(parents=True, exist_ok=True)
     # Run the normal server and the changed server in parallel
     # Each iteration has a warmup of the JITServer and then the actual benchmarking
 

@@ -15,6 +15,7 @@ import git
 import docker_tools
 from partial_output_generator import generate_report_renaissance
 
+
 def remove_empty_strings(lst) -> list:
     new_list = []
     for i in lst:
@@ -22,13 +23,17 @@ def remove_empty_strings(lst) -> list:
             new_list.append(i)
     return new_list
 
+
 import resource
+
+
 def using(point=""):
     print(resource.getrlimit(resource.RLIMIT_NOFILE))
-    usage=resource.getrusage(resource.RUSAGE_SELF)
+    usage = resource.getrusage(resource.RUSAGE_SELF)
     return '''%s: usertime=%s systime=%s mem=%s mb
-           '''%(point,usage[0],usage[1],
-                usage[2]/1024.0 )
+           ''' % (point, usage[0], usage[1],
+                  usage[2] / 1024.0)
+
 
 def wait_for_server(cmd):
     TIMEOUT = 20
@@ -49,6 +54,7 @@ def wait_for_server(cmd):
             proc.kill()  # Ensure the process is killed if it times out
             raise TimeoutError("JITServer did not start in time")
 
+
 def wait_for_docker_server(command, container):
     TIMEOUT = 20
 
@@ -65,14 +71,15 @@ def wait_for_docker_server(command, container):
             time.sleep(1)
             return docker_server
 
+
 def start_docker_server(cmd, queue, container):
     queue.empty()
     paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
     for path in paths:
         os.remove(path)
-    #server_vlog_file = open("servervlog.txt", "wb")
-    #stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
-    docker_tools.execute_container_commmand(container,f'{cmd}')
+    # server_vlog_file = open("servervlog.txt", "wb")
+    # stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
+    docker_tools.execute_container_commmand(container, f'{cmd}')
     time.sleep(2)
     paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
     server_read = open(paths[0], "r")
@@ -80,16 +87,16 @@ def start_docker_server(cmd, queue, container):
     while True:
         line = server_read.readline().strip()
         if line:
-            #print(line)
-            #server_vlog_file.write(line)
+            # print(line)
+            # server_vlog_file.write(line)
             # if b'#' in line:
             #     line = line.split(b'#')[1]
             queue.put(line)
-            #print(f'socket line: {line}')
+            # print(f'socket line: {line}')
 
 
 def start_continuous_load(openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
-                          log_directory, loud_output,renaissance):
+                          log_directory, loud_output, renaissance):
     limit = Date.datetime.now() + Date.timedelta(seconds=int(time_to_run))
 
     d_err = Path(f'{log_directory}/Error').mkdir(parents=True, exist_ok=True)
@@ -191,7 +198,7 @@ if __name__ == "__main__":
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time) + str(thread_count)
 
     staggering_time_str = str(staggering_time)
-    staggering_time_str = staggering_time_str.replace(".","p")
+    staggering_time_str = staggering_time_str.replace(".", "p")
 
     if not use_docker:
         openj9_repo_path = f'{openj9_path.split("build/linux-x86_64-server-release/jdk/bin")[0]}openj9'
@@ -238,29 +245,38 @@ if __name__ == "__main__":
 
     run_env_vars = constants.run_env_vars
     directories = constants.directories
+    directories.append("baseline_server")
 
-    for i in range(len(run_env_vars)):
-        print(f'{directories[i]} run')
-        if not use_docker:
-            for var in run_env_vars:
-                if var is not None:
-                    os.environ[var] = 'false'
-            if run_env_vars[i] is not None:
-                os.environ[run_env_vars[i]] = 'true'
+    for i in range(len(directories)):
+        if i == len(run_env_vars):
+            print(f'baseline_server run')
         else:
+            print(f'{directories[i]} run')
+        if not use_docker:
+            if i != len(run_env_vars):
+                for var in run_env_vars:
+                    if var is not None:
+                        os.environ[var] = 'false'
+                if run_env_vars[i] is not None:
+                    os.environ[run_env_vars[i]] = 'true'
+        else:
+
             docker_env_vars = dict()
-            for var in run_env_vars:
-                if var is not None:
-                    docker_env_vars[var] = 'false'
-            if run_env_vars[i] is not None:
-                docker_env_vars[run_env_vars[i]] = 'true'
-            #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
+            if i != len(run_env_vars):
+                for var in run_env_vars:
+                    if var is not None:
+                        docker_env_vars[var] = 'false'
+                if run_env_vars[i] is not None:
+                    docker_env_vars[run_env_vars[i]] = 'true'
+            # TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
             time.sleep(10)
             container = docker_tools.start_container(docker_env_vars)
             container.reload()
             ipaddress = container.attrs['NetworkSettings']['IPAddress']
         if use_docker:
             server_path = "/root/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
+            if i == len(run_env_vars):
+                server_path = "/root/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
         cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
         if use_docker:
             other_flags = f'{other_flags} -XX:JITServerAddress={ipaddress}'
@@ -282,16 +298,22 @@ if __name__ == "__main__":
         for q in range(int(num_clients)):
             Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
             client_directory = f"{sp_directory}/client_{q}"
-            command = Process(target=start_continuous_load, args=(
-            openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-            loud_output,renaissance))
+            if i == len(run_env_vars):
+                command = Process(target=start_continuous_load, args=(
+                    baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                    client_directory,
+                    loud_output, renaissance))
+            else:
+                command = Process(target=start_continuous_load, args=(
+                    openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                    client_directory,
+                    loud_output, renaissance))
             command.start()
             clients.append(command)
             time.sleep(float(staggering_time))
         for client in clients:
             client.join()
             client.close()
-
 
         if use_docker is False:
             shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
@@ -305,8 +327,8 @@ if __name__ == "__main__":
             server_vlog.kill()
             server_vlog.join()
             server_vlog.close()
-            docker_tools.execute_container_commmand(container,'pkill jitserver')
-            #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
+            docker_tools.execute_container_commmand(container, 'pkill jitserver')
+            # TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
             time.sleep(10)
             # error_stream = docker_tools.execute_container_commmand(container,'cat /root/servererror.txt')
             # for line in error_stream:
@@ -316,64 +338,6 @@ if __name__ == "__main__":
             container.remove()
 
         print(f"{directories[i]} run done")
-    directories.append("baseline_server")
-
-    if use_docker:
-        container = docker_tools.start_container(dict())
-        container.reload()
-        ipaddress = container.attrs['NetworkSettings']['IPAddress']
-        baseline_server_path = "/root/servers/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin/jitserver"
-    cmd = f'{baseline_server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
-    if use_docker:
-        cmd = f'{cmd} -XX:JITServerAddress={ipaddress}'
-    if use_docker is False:
-        print("server command: " + cmd)
-        server, server_file, server_file_2 = wait_for_server(cmd)
-    else:
-        cmd = f'{server_path} -XX:+JITServerLogConnections -XX:+JITServerMetrics -Xjit:verbose={{JITServer}},vlog=/root/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/temp_clw_files/servervlogfile,highActiveThreadThreshold=1000000000,veryHighActiveThreadThreshold=1000000000 -XcompilationThreads{thread_count}'
-        print("server command: " + cmd)
-        server_vlog = wait_for_docker_server(cmd, container)
-    sp_directory = log_directory + f'/baseline_server'
-    Path(sp_directory).mkdir(parents=True, exist_ok=True)
-    shutil.copy(compiler_json_file, sp_directory + "/compiler_config.json")
-    shutil.copy(kernel_json_file, sp_directory + "/kernel_config.json")
-    now = str(Date.datetime.now())
-    now = now.replace(" ", ".").replace(":", "").replace("-", "")
-    clients = []
-    for q in range(int(num_clients)):
-        Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
-        client_directory = f"{sp_directory}/client_{q}"
-        command = Process(target=start_continuous_load, args=(
-            baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run, client_directory,
-            loud_output, renaissance))
-        command.start()
-        clients.append(command)
-        time.sleep(float(staggering_time))
-    for client in clients:
-        client.join()
-        client.close()
-
-    if use_docker is False:
-        shutil.copy('servervlog.txt', sp_directory + f'/servervlog_file.{now}')
-        server.kill()
-        server.wait()
-        server_file.close()
-        server_file_2.close()
-    else:
-        paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
-        shutil.copy(paths[0], sp_directory + f'/servervlog_file.{now}')
-        server_vlog.kill()
-        server_vlog.join()
-        server_vlog.close()
-        docker_tools.execute_container_commmand(container,'pkill jitserver')
-        #TODO: THIS IS CRINGE AND HARD-CODED, DO A WAIT PROPERLY
-        time.sleep(10)
-        container.kill()
-        container.wait()
-        container.remove()
-
-    print(f"baseline_server run done")
-
 
     # Do a final analysis of the results
     get_dir = log_directory

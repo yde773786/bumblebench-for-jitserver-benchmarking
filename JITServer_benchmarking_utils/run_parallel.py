@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # runner.run()
     runner = UpdateBenchmarkingUtils('dockertools', machines=machines)
     runner.run()
-    runner = RunRenaissanceDockerSweep([50,50,50,50,50], [500,1000,2000,4000,6000], [2,2,2,2,2], [63,63,63,63,63], ['-r 50 finagle-chirper','-r 50 finagle-chirper','-r 50 finagle-chirper','-r 50 finagle-chirper','-r 50 finagle-chirper'], machines=machines, get_analytics=True)
+    runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,100,200,400,600], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper'], machines=machines, get_analytics=True)
     runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############

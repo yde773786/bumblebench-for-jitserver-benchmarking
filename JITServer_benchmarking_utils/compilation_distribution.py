@@ -2,11 +2,12 @@ import argparse
 import pandas as pd
 import seaborn
 import matplotlib
-import matplotlib.pyplot as plt
 try:
     matplotlib.use('TkAgg')
 except:
     matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
     "figure.figsize": (12.0, 10.25),

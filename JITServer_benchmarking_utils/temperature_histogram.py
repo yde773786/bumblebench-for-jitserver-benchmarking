@@ -1,9 +1,12 @@
 import sys
-import matplotlib.pyplot as plt
+
+import matplotlib
 try:
-    plt.use('TkAgg')
+    matplotlib.use('TkAgg')
 except:
-    plt.use('Agg')
+    matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 INPUT = open(sys.argv[1], 'r')
 save_fig_path = sys.argv[2]
 temperature = {'cold': 0, 'warm': 0, 'hot': 0, 'scorching': 0}

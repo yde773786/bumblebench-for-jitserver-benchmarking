@@ -72,6 +72,9 @@ class RunRenaissanceDockerSweep(Runner):
         Path('analytics').mkdir(parents=True, exist_ok=True)
         if self.get_analytics:
             Path("~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics").mkdir(parents=True, exist_ok=True)
+            num_files = str(len(os.listdir('analytics')))
+            parallel_run_dir = f'analytics/{num_files}'
+            Path(parallel_run_dir).mkdir(parents=True, exist_ok=True)
             for machine in self.machines:
                 file = open(f'server_vlog_{machine}.txt', "r")
                 for line in file:
@@ -79,17 +82,18 @@ class RunRenaissanceDockerSweep(Runner):
                         split = line.split("<")[1]
                         split = split.split(">")[0]
                         machine_dir = split.replace("/", "_")
-                        machine_dir = f'analytics/{machine_dir}'
+                        machine_dir = f'{parallel_run_dir}/{machine_dir}'
                         Path(machine_dir).mkdir(parents=True, exist_ok=True)
-
+                        graph_dir = f'{machine_dir}/graphs'
+                        Path(graph_dir).mkdir(parents=True, exist_ok=True)
                         subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/report_per_client.csv {machine_dir}", text=True, shell=True)
                         for server_folder in directories:
                             subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/{server_folder}/servervlog* {machine_dir}/{server_folder}_servervlog", text=True, shell=True)
 
-                        subprocess.call(f"python3 ../../cdf_grapher.py -d report_per_client.csv -clw -f cdf_comp_times", text=True, shell=True, cwd=machine_dir)
-                        subprocess.call(f"python3 ../../temperature_histogram.py fcfs_server_servervlog temperature_histogram", text=True, shell=True, cwd=machine_dir)
-                        subprocess.call(f"python3 ../../compilation_distribution.py -d fcfs_server_servervlog -f cdf_comp_dist", text=True, shell=True, cwd=machine_dir)
-                        subprocess.call(f"python3 ../../compilation_distribution.py -d fcfs_server_servervlog -f histogram_comp_dist -his", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../../cdf_grapher.py -d report_per_client.csv -clw -f graphs/cdf_comp_times", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../../temperature_histogram.py fcfs_server_servervlog graphs/temperature_histogram", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../../compilation_distribution.py -d fcfs_server_servervlog -f graphs/cdf_comp_dist", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../../compilation_distribution.py -d fcfs_server_servervlog -f graphs/histogram_comp_dist -his", text=True, shell=True, cwd=machine_dir)
 
 class ClearContainers(Runner):
 
@@ -105,18 +109,19 @@ class ClearContainers(Runner):
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
-    # runner = KillAllProcesses('richardkha')
+    machines = ['mel-19', 'mel-20', 'mel-22', 'mel-25']
+    # runner = KillAllProcesses('richardkha', machines=machines)
     # runner.run()
-    # runner = ClearContainers()
+    # runner = ClearContainers(machines=machines)
     # runner.run()
     # runner = MakeOpenJ9('quickInfoGetterThreaded')
     # runner.run()
     # runner = MakeBaselineOpenJ9()
     # runner.run()
-    # runner = UpdateBenchmarkingUtils('dockertools')
+    # runner = UpdateBenchmarkingUtils('dockertools', machines=machines)
     # runner.run()
-    runner = RunRenaissanceDockerSweep([5,10,20,50,100], [0.5,0.5,0.5,0.5,0.5], [2,2,2,2,2], [63,63,63,63,63], ['-r 10 als','-r 10 als','-r 10 als','-r 10 als','-r 10 als'], get_analytics=True)
-    runner.run()
+    # runner = RunRenaissanceDockerSweep([5,10,20,50,100], [0.5,0.5,0.5,0.5,0.5], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 dotty','-r 100 dotty','-r 100 dotty','-r 100 dotty','-r 100 dotty'], machines=machines, get_analytics=True)
+    # runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############
     ...

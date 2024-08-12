@@ -4,7 +4,10 @@ import csv
 import seaborn
 import matplotlib
 import constants
-matplotlib.use('TkAgg')
+try:
+    matplotlib.use('TkAgg')
+except:
+    matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({
     "figure.constrained_layout.use": True,

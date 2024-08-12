@@ -6,7 +6,17 @@ try:
 except:
     matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
+plt.rcParams.update({
+    "figure.constrained_layout.use": True,
+    "figure.figsize": (12.0, 10.25),
+    "font.size": 12,
+    "hatch.linewidth": 0.5,
+    "legend.fontsize": 12,
+    "legend.framealpha": 0.5,
+    "lines.linewidth": 1.0,
+    "lines.markersize": 4.0,
+    "savefig.dpi": 300,
+})
 INPUT = open(sys.argv[1], 'r')
 save_fig_path = sys.argv[2]
 temperature = {'cold': 0, 'warm': 0, 'hot': 0, 'scorching': 0}

@@ -168,6 +168,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--figure_name', required=False)
     parser.add_argument('-oo', '--original_openj9_path', required=True)
     parser.add_argument('-th', '--thread_count', required=True)
+    parser.add_argument('-g', '--graph', action='store_true')
 
     args = vars(parser.parse_args())
 
@@ -177,6 +178,7 @@ if __name__ == "__main__":
     original_openj9_path = args['original_openj9_path']
     bumblebench_jitserver_path = args['bumblebench_jitserver_path']
     loud_output = args['loud_output']
+    graph = args['graph']
     use_docker = args['docker']
     time_to_run = args['time_to_run']
     num_clients = args['number_of_clients']
@@ -260,7 +262,6 @@ if __name__ == "__main__":
                 if run_env_vars[i] is not None:
                     os.environ[run_env_vars[i]] = 'true'
         else:
-
             docker_env_vars = dict()
             if i != len(run_env_vars):
                 for var in run_env_vars:
@@ -360,8 +361,9 @@ if __name__ == "__main__":
         generate_report_renaissance(directories, per_client_report_file, get_dir, num_clients)
     per_client_report_file.close()
     cmd = ''
-    if figure_name is not None:
-        cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -f {figure_name} -clw'
-    else:
-        cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -clw'
-    proc = subprocess.Popen(cmd, shell=True)
+    if graph:
+        if figure_name is not None:
+            cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -f {figure_name} -clw'
+        else:
+            cmd = f'python3 cdf_grapher.py -d {get_dir}/report_per_client.csv -clw'
+        proc = subprocess.Popen(cmd, shell=True)

@@ -68,7 +68,7 @@ class RunRenaissanceDockerSweep(Runner):
         self.commands = [f'cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 continuous_load_wrapper.py -oa ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -oo ~/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n {num_clients[i]} -s {stagger_time[i]} -ti {run_time[i]} -th {num_threads[i]} -ren "{renaisance_args[i]}" -d' for i in range(len(machines))]
 
     def run(self):
-        #super().run()
+        super().run()
         Path('analytics').mkdir(parents=True, exist_ok=True)
         if self.get_analytics:
             Path("~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/analytics").mkdir(parents=True, exist_ok=True)

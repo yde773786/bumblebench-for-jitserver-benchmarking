@@ -1,10 +1,8 @@
 import sys
 
 import matplotlib
-try:
-    matplotlib.use('TkAgg')
-except:
-    matplotlib.use('Agg')
+
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({
     "figure.constrained_layout.use": True,

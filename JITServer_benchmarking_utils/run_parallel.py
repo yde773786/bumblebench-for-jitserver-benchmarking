@@ -87,6 +87,9 @@ class RunRenaissanceDockerSweep(Runner):
                         graph_dir = f'{machine_dir}/graphs'
                         Path(graph_dir).mkdir(parents=True, exist_ok=True)
                         subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/report_per_client.csv {machine_dir}", text=True, shell=True)
+                        subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/command_line_options.txt {machine_dir}", text=True, shell=True)
+                        directories_2 = directories
+                        directories_2.append("baseline_server")
                         for server_folder in directories:
                             subprocess.call(f"scp {machine}:~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/{split}/{server_folder}/servervlog* {machine_dir}/{server_folder}_servervlog", text=True, shell=True)
 
@@ -109,19 +112,19 @@ class ClearContainers(Runner):
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
-    machines = ['mel-19', 'mel-20', 'mel-22', 'mel-25']
+    machines = ['mel-19', 'mel-20', 'mel-22', 'mel-25', 'mel-26']
     runner = KillAllProcesses('richardkha', machines=machines)
     runner.run()
-    # runner = ClearContainers(machines=machines)
-    # runner.run()
-    # runner = MakeOpenJ9('quickInfoGetterThreaded')
-    # runner.run()
-    # runner = MakeBaselineOpenJ9()
-    # runner.run()
+    runner = ClearContainers(machines=machines)
+    runner.run()
+    runner = MakeOpenJ9('quickInfoGetterThreaded')
+    runner.run()
+    runner = MakeBaselineOpenJ9()
+    runner.run()
     runner = UpdateBenchmarkingUtils('dockertools', machines=machines)
     runner.run()
-    runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,100,200,400,600], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper'], machines=machines, get_analytics=True)
-    runner.run()
+    #runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,100,200,400,600], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper'], machines=machines, get_analytics=True)
+    #runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############
     ...

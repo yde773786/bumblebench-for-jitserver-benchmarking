@@ -71,6 +71,7 @@ if __name__ == "__main__":
         # fig.set_size_inches(3,3)
         # fig.set_dpi(100)
         plt.xlim(0, maxim)
+        plt.yscale('log',base=10)
         if figure_export_name is not None:
             fig.savefig(f'{figure_export_name}.png')
 
@@ -78,6 +79,7 @@ if __name__ == "__main__":
         plot = seaborn.ecdfplot(data=both)
         fig = plot.get_figure()
         plt.xlabel("Compilation time (s)")
+        plt.yscale('log',base=10)
         plt.xlim(0, maxim)
         if figure_export_name is not None:
             fig.savefig(f'{figure_export_name}.png')

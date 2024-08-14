@@ -105,6 +105,12 @@ class ClearContainers(Runner):
         self.machines = machines
         self.commands = [f"docker kill $(docker ps -q); docker remove $(docker ps -q -a)"] * len(machines)
 
+class RemakeImages(Runner):
+
+    def __init__(self, machines=MACHINES):
+        super().__init__()
+        self.machines = machines
+        self.commands = [f"python3 ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/docker_tools.py"] * len(machines)
 ############# DEFINE YOUR PERSONAL RUNNERS HERE. DO NOT COMMIT #############
 
 #######################################################################
@@ -112,19 +118,21 @@ class ClearContainers(Runner):
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
-    machines = ['mel-19', 'mel-20', 'mel-22', 'mel-25', 'mel-26']
+    machines = ['mel-19', 'mel-20', 'mel-22', 'mel-25']
     runner = KillAllProcesses('richardkha', machines=machines)
-    runner.run()
-    runner = ClearContainers(machines=machines)
-    runner.run()
-    runner = MakeOpenJ9('quickInfoGetterThreaded')
-    runner.run()
-    runner = MakeBaselineOpenJ9()
-    runner.run()
-    runner = UpdateBenchmarkingUtils('dockertools', machines=machines)
-    runner.run()
-    #runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,100,200,400,600], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper','-r 100 finagle-chirper'], machines=machines, get_analytics=True)
     #runner.run()
+    runner = ClearContainers(machines=machines)
+    #runner.run()
+    runner = MakeOpenJ9('quickInfoGetterThreaded')
+    #runner.run()
+    runner = MakeBaselineOpenJ9()
+    #runner.run()
+    runner = UpdateBenchmarkingUtils('dockertools', machines=machines)
+    #runner.run()
+    runner = RemakeImages(machines=machines)
+    runner.run()
+    runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,100,200,400,600], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 dotty','-r 100 dotty','-r 100 dotty','-r 100 dotty','-r 100 dotty'], machines=machines, get_analytics=True)
+   # runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############
     ...

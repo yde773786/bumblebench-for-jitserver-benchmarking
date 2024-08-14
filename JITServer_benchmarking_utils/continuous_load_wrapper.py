@@ -80,7 +80,9 @@ def start_docker_server(cmd, queue, container):
     # server_vlog_file = open("servervlog.txt", "wb")
     # stream = docker_tools.execute_container_commmand(container,f'{cmd}')[1]
     docker_tools.execute_container_commmand(container, f'{cmd}')
-    time.sleep(2)
+    time.sleep(10)
+    os.system("docker exec -t jitserver_host sh -c \"chmod 777 /root/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/temp_clw_files/servervlogfile*\"")
+    time.sleep(10)
     paths = list(Path('.').glob('temp_clw_files/servervlogfile*'))
     server_read = open(paths[0], "r")
     time.sleep(2)

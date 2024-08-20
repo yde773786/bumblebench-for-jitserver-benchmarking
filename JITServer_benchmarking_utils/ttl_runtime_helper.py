@@ -22,9 +22,11 @@ parser = argparse.ArgumentParser(description='Plot the runtime per client')
 parser.add_argument('-i', '--input_file', type=str, required=True, help='The input file')
 parser.add_argument('-s1', '--save_fig_path', type=str, required=True, help='The path to save the figure for runtime per client')
 parser.add_argument('-n', '--num_clients', type=int, required=True, help='The number of clients')
+parser.add_argument('-p', '--percentiles', type=str, required=False, help='The percentiles to calculate')
 
 # Parse the arguments
 args = parser.parse_args()
+percentiles = [float(p) for p in args.percentiles.split(',')]
 
 INPUT = open(args.input_file, 'r')
 num_clients = args.num_clients
@@ -33,6 +35,7 @@ algos = ('First Come First Serve (Baseline)', 'Alternating Least Done Client Fir
 clients = (str(i) for i in range(num_clients))
 
 client_runtime = {algo: [0 for _ in range(num_clients)] for algo in algos}
+client_percentiles = {algo: [0 for _ in range(len(percentiles))] for algo in algos}
 
 for line in INPUT:
     line_spl = line.split(',')
@@ -44,6 +47,11 @@ for line in INPUT:
         client_runtime['Round Robin'][int(line_spl[1]) - 1] += float(line_spl[3])
 
 print(client_runtime)
+for percentile in percentiles:
+    for algo in algos:
+        client_percentiles[algo][percentiles.index(percentile)] = pd.Series(client_runtime[algo]).quantile(percentile / 100)
+
+print(client_percentiles)
 
 data_frames = []
 df = pd.DataFrame(client_runtime)
@@ -52,6 +60,21 @@ both = pd.concat(data_frames, axis=1)
 plot = seaborn.ecdfplot(data=both)
 plt.title("Akka-Uct (100s S.T)")
 plt.xlabel("Completion time (s)")
+
+for percentile in percentiles:
+    # plt.axhline(y=percentile / 100, color='grey', linestyle='--')
+    max_x = 0
+    for algo in algos:
+        x_value = client_percentiles[algo][percentiles.index(percentile)]
+        if x_value > max_x:
+            max_x = x_value
+        plt.vlines(x=x_value, ymin=0, ymax=percentile / 100, color='grey', linestyle='--')
+    
+    plt.hlines(y=percentile / 100, xmin=0, xmax=max_x, color='grey', linestyle='--')
+
+plt.xlim(0, max([max(client_runtime[algo]) for algo in algos]))
+plt.ylim(0, 1)
+
 fig = plot.get_figure()
 fig.savefig(f'{args.save_fig_path}.svg', format='svg', dpi=300)
 

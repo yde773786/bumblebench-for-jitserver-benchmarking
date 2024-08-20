@@ -5,7 +5,7 @@ import argparse
 
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
-    "figure.figsize": (5.0, 4),
+    "figure.figsize": (6.0, 4),
     "font.size": 12,
     "hatch.linewidth": 0.5,
     "legend.fontsize": 12,
@@ -50,8 +50,8 @@ df = pd.DataFrame(client_runtime)
 data_frames.append(df)
 both = pd.concat(data_frames, axis=1)
 plot = seaborn.ecdfplot(data=both)
-plt.title("Finagle (75s S.T)")
+plt.title("Akka-Uct (100s S.T)")
 plt.xlabel("Completion time (s)")
 fig = plot.get_figure()
-fig.savefig(args.save_fig_path)
+fig.savefig(f'{args.save_fig_path}.svg', format='svg', dpi=300)
 

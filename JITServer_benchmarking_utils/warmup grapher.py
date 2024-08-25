@@ -16,10 +16,12 @@ if __name__ == "__main__":
     parser.add_argument('-nr', '--num_runs', required=True)
     parser.add_argument('-pc', '--particular_client', required=False)
     parser.add_argument('-gr', '--graph_all', action='store_true')
+    parser.add_argument('-s','--server', required=False)
     args = vars(parser.parse_args())
     total_data = args['data']
     particular_client = args['particular_client']
     graph_all = args['graph_all']
+    server = args['server']
     total_data = total_data.split(",")
     for data in total_data:
         x_data = []
@@ -30,11 +32,12 @@ if __name__ == "__main__":
             reader = csv.reader(file)
             next(reader, None)
             for row in reader:
-                if particular_client is not None:
-                    if int(row[1]) == int(particular_client):
+                if server is None or server == row[0]:
+                    if particular_client is not None:
+                        if int(row[1]) == int(particular_client):
+                            x_data[int(row[2]) - 1].append(float(row[3]))
+                    else:
                         x_data[int(row[2]) - 1].append(float(row[3]))
-                else:
-                    x_data[int(row[2]) - 1].append(float(row[3]))
         final_graph_data = []
         if not graph_all:
             for i in x_data:

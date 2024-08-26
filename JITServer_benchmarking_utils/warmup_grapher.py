@@ -3,28 +3,10 @@ import csv
 
 import numpy as np
 import matplotlib
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog='runwrapper',
-        description="A Script that graphs a line graph of the client warmup"
-    )
-
-    parser.add_argument('-d', '--data', required=True)
-    parser.add_argument('-nc', '--num_clients', required=True)
-    parser.add_argument('-nr', '--num_runs', required=True)
-    parser.add_argument('-pc', '--particular_client', required=False)
-    parser.add_argument('-lc', '--longest_client', action='store_true')
-    parser.add_argument('-gr', '--graph_all', action='store_true')
-    parser.add_argument('-s', '--server', required=False)
-    args = vars(parser.parse_args())
-    total_data = args['data']
-    particular_client = args['particular_client']
-    graph_all = args['graph_all']
-    server = args['server']
-    longest_client = args['longest_client']
-
+def create_graphs(total_data, particular_client, graph_all, server, longest_client, num_clients, num_runs ):
     if longest_client and particular_client is not None:
         print("these two options cannot be enabled at the same time, aborting...")
         exit(0)
@@ -33,7 +15,7 @@ if __name__ == "__main__":
     longest_start_client_value = 0
     for data in total_data:
         x_data = []
-        for i in range(int(args['num_runs'])):
+        for i in range(int(num_runs)):
             x_data.append([])
         recent_time = 0
         if longest_client:
@@ -65,7 +47,7 @@ if __name__ == "__main__":
         if not graph_all:
             for i in x_data:
                 final_graph_data.append(sum(i)/len(i))
-            x = np.array(range(1, int(args['num_runs']) + 1))
+            x = np.array(range(1, int(num_runs) + 1))
             y = np.array(final_graph_data)
             plt.plot(x, y)
         else:
@@ -73,12 +55,33 @@ if __name__ == "__main__":
                 final_graph_data = []
                 for i in x_data:
                     final_graph_data.append(i[z])
-                x = np.array(range(1,int(args['num_runs']) + 1))
+                x = np.array(range(1,int(num_runs) + 1))
                 y = np.array(final_graph_data)
                 plt.plot(x, y)
-    plt.title("Client runtime vs run when the JITServer is throttled")
+    #plt.title("Client runtime vs run at the JITServer")
     plt.xlabel("Run (s)")
     plt.ylabel("Client runtime")
+    
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog='runwrapper',
+        description="A Script that graphs a line graph of the client warmup"
+    )
+
+    parser.add_argument('-d', '--data', required=True)
+    parser.add_argument('-nc', '--num_clients', required=True)
+    parser.add_argument('-nr', '--num_runs', required=True)
+    parser.add_argument('-pc', '--particular_client', required=False)
+    parser.add_argument('-lc', '--longest_client', action='store_true')
+    parser.add_argument('-gr', '--graph_all', action='store_true')
+    parser.add_argument('-s', '--server', required=False)
+    args = vars(parser.parse_args())
+    total_data = args['data']
+    particular_client = args['particular_client']
+    graph_all = args['graph_all']
+    server = args['server']
+    longest_client = args['longest_client']
+    num_runs = args['num_runs']
+    num_clients = args['num_clients']
+    create_graphs(total_data, particular_client, graph_all, server, longest_client, num_clients, num_runs)
     plt.show()
-
-

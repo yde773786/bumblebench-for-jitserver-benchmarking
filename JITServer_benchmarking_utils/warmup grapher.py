@@ -29,7 +29,7 @@ if __name__ == "__main__":
         print("these two options cannot be enabled at the same time, aborting...")
         exit(0)
     total_data = total_data.split(",")
-    longest_start_client = 0
+    longest_start_client = -1
     longest_start_client_value = 0
     for data in total_data:
         x_data = []

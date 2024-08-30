@@ -6,6 +6,17 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "figure.constrained_layout.use": True,
+    "figure.figsize": (8.0, 4),
+    "font.size": 14,
+    "hatch.linewidth": 0.5,
+    "legend.fontsize": 14,
+    "legend.framealpha": 0.5,
+    "lines.linewidth": 1.0,
+    "lines.markersize": 4.0,
+    "savefig.dpi": 300,
+})
 def create_graphs(total_data, particular_client, graph_all, server, longest_client, num_clients, num_runs ):
     if longest_client and particular_client is not None:
         print("these two options cannot be enabled at the same time, aborting...")
@@ -49,6 +60,15 @@ def create_graphs(total_data, particular_client, graph_all, server, longest_clie
                 final_graph_data.append(sum(i)/len(i))
             x = np.array(range(1, int(num_runs) + 1))
             y = np.array(final_graph_data)
+            #import matplotlib.transforms as mtransforms
+            #fig, ax = plt.subplots()
+            #trans = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+            # ax.patch.set_facecolor('green')
+            # ax.patch.set_alpha(0.2)
+            #plt.axhspan(15,30, alpha=.2, color='red')
+            #ax.fill_between(x, -1, 1, facecolor='green', alpha=0.2, transform=trans)
+            #ax.fill_between(x, -1, 1, where=x<=65, facecolor='red', alpha=0.2, transform=trans)
+            #plt.axhspan(0,250, alpha=.2, color='red')
             plt.plot(x, y)
         else:
             for z in range(len(x_data[0])):
@@ -59,8 +79,8 @@ def create_graphs(total_data, particular_client, graph_all, server, longest_clie
                 y = np.array(final_graph_data)
                 plt.plot(x, y)
     #plt.title("Client runtime vs run at the JITServer")
-    plt.xlabel("Run (s)")
-    plt.ylabel("Client runtime")
+    plt.xlabel("Iteration number")
+    plt.ylabel("Runtime")
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

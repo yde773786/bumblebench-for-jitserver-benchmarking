@@ -6,10 +6,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
-    "figure.figsize": (12.0, 10.25),
-    "font.size": 12,
+    "figure.figsize": (8, 4),
+    "font.size": 14,
     "hatch.linewidth": 0.5,
-    "legend.fontsize": 12,
+    "legend.fontsize": 14,
     "legend.framealpha": 0.5,
     "lines.linewidth": 1.0,
     "lines.markersize": 4.0,
@@ -24,7 +24,7 @@ for line in INPUT:
         spl = line.split()
         temperature[spl[3][:-1]] += int(spl[4])
 plt.bar(temperature.keys(), temperature.values())
-plt.title('Temperature Histogram')
+#plt.title('Temperature Histogram')
 plt.xlabel('Temperature')
 plt.ylabel('Number of Compilations')
-plt.savefig(save_fig_path)
+plt.savefig(f'{save_fig_path}.pdf', format="pdf", bbox_inches="tight")

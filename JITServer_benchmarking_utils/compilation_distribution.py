@@ -9,11 +9,11 @@ except:
 import matplotlib.pyplot as plt
 
 plt.rcParams.update({
-    "figure.constrained_layout.use": True,
-    "figure.figsize": (12.0, 10.25),
-    "font.size": 12,
+    #"figure.constrained_layout.use": True,
+    "figure.figsize": (8, 4),
+    "font.size": 14,
     "hatch.linewidth": 0.5,
-    "legend.fontsize": 12,
+    "legend.fontsize": 14,
     "legend.framealpha": 0.5,
     "lines.linewidth": 1.0,
     "lines.markersize": 4.0,
@@ -57,23 +57,35 @@ if __name__ == "__main__":
 
     both = pd.concat(data_frames, axis=1)
     print(both)
-    print(maxim)
     if histogram:
-        for frame in data_frames:
-            plot = seaborn.displot(data=frame)
-            plt.title("Histogram of compilation times on the JITServer")
-            plt.xlabel("Completion time (s)")
-        if len(data_frames) > 1:
-            plot = seaborn.displot(data=both)
-            plt.title("Histogram of compilation times on the JITServer")
-            plt.xlabel("Completion time (s)")
-        fig = plot.fig
+        palette = ["#f00202" ]
+
+        #seaborn.set_style("whitegrid")
+        # for frame in data_frames:
+        #     plot = seaborn.displot(data=frame, legend=False, palette=seaborn.color_palette(palette, len(palette)))
+        #     #plt.title("Histogram of compilation times on the JITServer")
+        #     plt.xlabel("Compilation time (s)")
+        # if len(data_frames) > 1:
+        #     plot = seaborn.displot(data=both, legend=False, palette=seaborn.color_palette(palette, len(palette)))
+        #     #plt.title("Histogram of compilation times on the JITServer")
+        #     plt.xlabel("Compilation time (s)")
+        # fig = plot.fig
+
         # fig.set_size_inches(3,3)
         # fig.set_dpi(100)
-        plt.xlim(0, maxim)
+        plt.xlim(0, 50)
+
+
         plt.yscale('log',base=10)
+        plt.ylim((0, 1000))
+        plt.hist(both,bins=20000, color="red")
+        plt.xlabel("Compilation time (s)")
+        plt.ylabel("Count")
+
+        #fig, ax = plt.subplots()
         if figure_export_name is not None:
-            fig.savefig(f'{figure_export_name}.png')
+            plt.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")
+            #fig.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")
 
     else:
         plot = seaborn.ecdfplot(data=both)
@@ -82,6 +94,6 @@ if __name__ == "__main__":
         plt.yscale('log',base=10)
         plt.xlim(0, maxim)
         if figure_export_name is not None:
-            fig.savefig(f'{figure_export_name}.png')
+            fig.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")
     if figure_export_name is None:
         plt.show()

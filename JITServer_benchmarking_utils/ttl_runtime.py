@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
-
+# DOTTY: {'FCFS': 182313.33, 'ALDF': 160133.14, 'RR': 187458.07}
+# FUTURE-GENETIC: {'FCFS': 59214.090000000004, 'ALDF': 59337.02, 'RR': 61898.71999999999}
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
     "figure.figsize": (12.0, 10.25),
@@ -70,6 +71,7 @@ plt.savefig(args.save_fig_path_per_client)
 fig, ax = plt.subplots(layout='constrained')
 
 total_runtime = {algo: sum(runtimes) for algo, runtimes in client_runtime.items()}
+print(total_runtime)
 ax.bar(total_runtime.keys(), total_runtime.values())
 ax.set_ylabel('Total Runtime (ms)')
 ax.set_title('Total Runtime')

@@ -1,2 +1,4 @@
 run_env_vars = [None,'IsRoundRobinJitServer','IsImprovedLeastDoneFirstJitServer','IsLeastDoneFirstJitServer','IsFCFSImprovedServer', 'IsRandomJitServer']
 directories = ['fcfs_server', 'round_robin_server','ildf_server', 'least_done_first_server', 'improved_fcfs_server', 'random_server']
+font_size = 14
+figure_size = (8, 4)

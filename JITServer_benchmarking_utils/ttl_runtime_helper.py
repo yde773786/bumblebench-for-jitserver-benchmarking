@@ -2,13 +2,14 @@ import seaborn
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
-
+from constants import font_size
+from constants import figure_size
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
-    "figure.figsize": (8.0, 4),
-    "font.size": 14,
+    "figure.figsize": figure_size,
+    "font.size": font_size,
     "hatch.linewidth": 0.5,
-    "legend.fontsize": 14,
+    "legend.fontsize": font_size,
     "legend.framealpha": 0.5,
     "lines.linewidth": 1.0,
     "lines.markersize": 4.0,

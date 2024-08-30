@@ -60,13 +60,13 @@ class UpdateBenchmarkingUtils(Runner):
 
 
 class RunRenaissanceDockerSweep(Runner):
-
+    num_clients = 0
     def __init__(self, num_clients, stagger_time, run_time, num_threads, renaisance_args, machines=MACHINES, get_analytics=False):
         super().__init__()
         self.machines = machines
         self.get_analytics = get_analytics
         self.commands = [f'cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 continuous_load_wrapper.py -oa ~/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -oo ~/baseline_openj9/openj9-openjdk-jdk17/build/linux-x86_64-server-release/jdk/bin -c compiler_config.json -k kernel_config.json -b .. -n {num_clients[i]} -s {stagger_time[i]} -ti {run_time[i]} -th {num_threads[i]} -ren "{renaisance_args[i]}" -d' for i in range(len(machines))]
-
+        self.num_clients = num_clients
     def run(self):
         super().run()
         Path('analytics').mkdir(parents=True, exist_ok=True)
@@ -75,6 +75,7 @@ class RunRenaissanceDockerSweep(Runner):
             num_files = str(len(os.listdir('analytics')))
             parallel_run_dir = f'analytics/{num_files}'
             Path(parallel_run_dir).mkdir(parents=True, exist_ok=True)
+            counter = 0
             for machine in self.machines:
                 file = open(f'server_vlog_{machine}.txt', "r")
                 for line in file:
@@ -95,9 +96,10 @@ class RunRenaissanceDockerSweep(Runner):
 
                         subprocess.call(f"python3 ../../../cdf_grapher.py -d report_per_client.csv -clw -f graphs/cdf_comp_times", text=True, shell=True, cwd=machine_dir)
                         subprocess.call(f"python3 ../../../temperature_histogram.py fcfs_server_servervlog graphs/temperature_histogram", text=True, shell=True, cwd=machine_dir)
-                        subprocess.call(f"python3 ../../../compilation_distribution.py -d fcfs_server_servervlog -f graphs/cdf_comp_dist", text=True, shell=True, cwd=machine_dir)
-                        subprocess.call(f"python3 ../../../compilation_distribution.py -d fcfs_server_servervlog -f graphs/histogram_comp_dist -his", text=True, shell=True, cwd=machine_dir)
-
+                        subprocess.call(f"python3 ../../../compilation_distribution.py -d baseline_server_servervlog -f graphs/cdf_comp_dist", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../../compilation_distribution.py -d baseline_server_servervlog -f graphs/histogram_comp_dist -his", text=True, shell=True, cwd=machine_dir)
+                        subprocess.call(f"python3 ../../../ttl_runtime.py -i report_per_client.csv -s1 graphs/total_time_per_client.png -s2 graphs/total_time_per_queue.png -n {self.num_clients[counter]}", text=True, shell=True, cwd=machine_dir)
+                counter += 1
 class ClearContainers(Runner):
 
     def __init__(self, machines=MACHINES):
@@ -110,7 +112,7 @@ class RemakeImages(Runner):
     def __init__(self, machines=MACHINES):
         super().__init__()
         self.machines = machines
-        self.commands = [f"python3 ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils/docker_tools.py"] * len(machines)
+        self.commands = [f"cd ~/bumblebench-for-jitserver-benchmarking/JITServer_benchmarking_utils; python3 docker_tools.py"] * len(machines)
 ############# DEFINE YOUR PERSONAL RUNNERS HERE. DO NOT COMMIT #############
 
 #######################################################################
@@ -118,21 +120,21 @@ class RemakeImages(Runner):
 if __name__ == '__main__':
 
     # Enter your configuration here. Below is an example
-    machines = ['mel-19', 'mel-20', 'mel-22', 'mel-25']
+    machines = ['mel-25', 'mel-22', 'mel-20', 'mel-19']
     runner = KillAllProcesses('richardkha', machines=machines)
-    #runner.run()
+    runner.run()
     runner = ClearContainers(machines=machines)
-    #runner.run()
+    runner.run()
     runner = MakeOpenJ9('quickInfoGetterThreaded')
     #runner.run()
     runner = MakeBaselineOpenJ9()
     #runner.run()
     runner = UpdateBenchmarkingUtils('dockertools', machines=machines)
-    #runner.run()
-    runner = RemakeImages(machines=machines)
     runner.run()
-    runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,100,200,400,600], [2,2,2,2,2], [63,63,63,63,63], ['-r 100 dotty','-r 100 dotty','-r 100 dotty','-r 100 dotty','-r 100 dotty'], machines=machines, get_analytics=True)
-   # runner.run()
+    runner = RemakeImages(machines=machines)
+    #runner.run()
+    runner = RunRenaissanceDockerSweep([50,50,50,50,50], [50,50,50,50,50], [2,2,2,2,2], [63,63,63,63,63], ['-r 50 dotty','-r 50 dotty','-r 50 dotty','-r 50 dotty','-r 50 dotty'], machines=machines, get_analytics=True)
+    runner.run()
 
     ############# RUN YOUR PERSONAL RUNNER CONFIGURATION HERE. DO NOT COMMIT #############
     ...

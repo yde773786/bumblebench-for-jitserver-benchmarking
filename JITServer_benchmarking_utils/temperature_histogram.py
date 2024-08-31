@@ -1,16 +1,20 @@
 import sys
 
 import matplotlib
+from constants import legend_size
 from constants import font_size
-from constants import figure_size
+from constants import COLUMN_HEIGHT
+from constants import COLUMN_WIDTH
+
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
-    "figure.figsize": figure_size,
+    "figure.figsize": (COLUMN_WIDTH,COLUMN_HEIGHT),
     "font.size": font_size,
     "hatch.linewidth": 0.5,
-    "legend.fontsize": font_size,
+    "legend.fontsize": legend_size,
     "legend.framealpha": 0.5,
     "lines.linewidth": 1.0,
     "lines.markersize": 4.0,

@@ -171,6 +171,7 @@ if __name__ == "__main__":
     parser.add_argument('-oo', '--original_openj9_path', required=True)
     parser.add_argument('-th', '--thread_count', required=True)
     parser.add_argument('-g', '--graph', action='store_true')
+    parser.add_argument('-alt', '--alternating_workload', required=False)
 
     args = vars(parser.parse_args())
 
@@ -188,17 +189,22 @@ if __name__ == "__main__":
     figure_name = args['figure_name']
     thread_count = args['thread_count']
     renaissance = args['renaissance']
+    alternating = args['alternating_workload']
     server_path = openj9_path + "/jitserver"
     openj9_path = openj9_path + "/java"
     baseline_server_path = original_openj9_path + "/jitserver"
     baseline_openj9_path = original_openj9_path + "/java"
     cmd = ''
-
+    if renaissance is None and alternating is not None:
+        print("Invalid options. Renaissance must also be active.")
+        exit(1)
     compiler_hash = config_comparer.create_unique_hash_from_path(compiler_json_file, False, loud_output)
     kernel_hash = config_comparer.create_unique_hash_from_path(kernel_json_file, True, loud_output)
     log_hash = compiler_hash + kernel_hash
     if renaissance is not None:
         log_hash += renaissance
+        if alternating is not None:
+            log_hash += alternating
     log_hash_plus_info = log_hash + str(time_to_run) + str(num_clients) + str(staggering_time) + str(thread_count)
 
     staggering_time_str = str(staggering_time)
@@ -232,6 +238,7 @@ if __name__ == "__main__":
     cmd_options.write(f'thread_count: {thread_count}\n')
     cmd_options.write(f'config hash: {config_comparer.create_hash_from_str(log_hash)}\n')
     cmd_options.write(f'renaissance: {renaissance}\n')
+    cmd_options.write(f'alternating: {alternating}\n')
     cmd_options.write(f'git branch: {git_branch}\n')
     cmd_options.write(f'git commit: {git_commit}\n')
     cmd_options.write(f'num files at time: {num_files}\n')
@@ -302,15 +309,44 @@ if __name__ == "__main__":
             Path(f"{sp_directory}/client_{q}").mkdir(parents=True, exist_ok=True)
             client_directory = f"{sp_directory}/client_{q}"
             if i == len(run_env_vars):
-                command = Process(target=start_continuous_load, args=(
-                    baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
-                    client_directory,
-                    loud_output, renaissance))
+                if alternating is not None:
+                    if q % 2 == 0:
+                        print("normal client")
+                        command = Process(target=start_continuous_load, args=(
+                            baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                            client_directory,
+                            loud_output, renaissance))
+                    else:
+                        print("alt client")
+                        command = Process(target=start_continuous_load, args=(
+                            baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                            client_directory,
+                            loud_output, alternating))
+                else:
+                    command = Process(target=start_continuous_load, args=(
+                        baseline_openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                        client_directory,
+                        loud_output, renaissance))
             else:
-                command = Process(target=start_continuous_load, args=(
-                    openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
-                    client_directory,
-                    loud_output, renaissance))
+                if alternating is not None:
+                    if q % 2 == 0:
+                        print("normal client")
+                        command = Process(target=start_continuous_load, args=(
+                            openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                            client_directory,
+                            loud_output, renaissance))
+                    else:
+                        print("alt client")
+                        command = Process(target=start_continuous_load, args=(
+                            openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                            client_directory,
+                            loud_output, alternating))
+                else:
+                    command = Process(target=start_continuous_load, args=(
+                        openj9_path, bumblebench_jitserver_path, xjit_flags, xaot_flags, other_flags, time_to_run,
+                        client_directory,
+                        loud_output, renaissance))
+
             command.start()
             clients.append(command)
             time.sleep(float(staggering_time))

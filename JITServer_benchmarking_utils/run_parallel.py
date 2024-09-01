@@ -225,7 +225,7 @@ if __name__ == '__main__':
     runner.run()
     runner = RemakeImages(machines=machines)
     runner.run()
-    runner = RunRenaissanceDockerSweep([50, 50, 50, 50, 50], [50, 100, 200, 400, 600], [2, 2, 2, 2, 2],
+    runner = RunRenaissanceDockerSweep([50, 50, 50, 50, 50], [50, 50, 50, 50, 50], [2, 2, 2, 2, 2],
                                        [63, 63, 63, 63, 63],
                                        ['-r 100 dotty', '-r 100 dotty', '-r 100 dotty', '-r 100 dotty', '-r 100 dotty'],
                                        machines=machines, get_analytics=True)

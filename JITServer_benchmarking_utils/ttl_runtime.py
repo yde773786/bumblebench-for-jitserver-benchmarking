@@ -30,7 +30,7 @@ args = parser.parse_args()
 INPUT = open(args.input_file, 'r')
 num_clients = args.num_clients
 
-algos = ('FCFS', 'ALDF', 'RR')
+algos = ('FCFS', 'ALDF', 'RR', 'LDCF')
 clients = (str(i) for i in range(num_clients))
 
 client_runtime = {algo: [0 for _ in range(num_clients)] for algo in algos}
@@ -49,6 +49,8 @@ for line in INPUT:
         client_runtime['FCFS'][int(line_spl[1]) - 1] += float(line_spl[3])
     elif 'round_robin_server' == line_spl[0]:
         client_runtime['RR'][int(line_spl[1]) - 1] += float(line_spl[3])
+    elif 'least_done_first_server'== line_spl[0]:
+        client_runtime['LDCF'][int(line_spl[1]) - 1] += float(line_spl[3])
 
 fig, ax = plt.subplots(layout='constrained')
 

@@ -11,7 +11,7 @@ except:
 import matplotlib.pyplot as plt
 plt.rcParams.update({
     "figure.constrained_layout.use": True,
-    "figure.figsize": (12.0, 10.25),
+    "figure.figsize": (6, 4),
     "font.size": 12,
     "hatch.linewidth": 0.5,
     "legend.fontsize": 12,

@@ -13,7 +13,7 @@ from constants import COLUMN_HEIGHT
 from constants import COLUMN_WIDTH
 
 plt.rcParams.update({
-    #"figure.constrained_layout.use": True,
+    "figure.constrained_layout.use": True,
     "figure.figsize": (COLUMN_WIDTH,COLUMN_HEIGHT),
     "font.size": font_size,
     "hatch.linewidth": 0.5,
@@ -77,12 +77,26 @@ if __name__ == "__main__":
 
         # fig.set_size_inches(3,3)
         # fig.set_dpi(100)
-        plt.xlim(0, 50)
+        plt.xlim(0, 0.5)
+        # import numpy as np
+        # logbins = np.geomspace(both.min(), both.max(), 8)
 
 
-        plt.yscale('log',base=10)
-        plt.ylim((0, 1000))
-        plt.hist(both,bins=20000, color="red")
+        # stuff to cut the tail
+        new_wrapper = [x for x in data_wrapper if x <=0.5]
+        df = pd.DataFrame({f'1:': new_wrapper})
+        bad = [df]
+        sad = pd.concat(bad, axis=1)
+
+
+
+        #plt.ylim((0, 1000))
+       # space = (np.logspace(start=-5, stop=3, num=1000).flatten()).tolist()
+       #  print(space)
+       #  plt.hist(both,bins=space, color="red")
+        #print(new_wrapper)
+        plt.hist(sad,bins=50, color="red")
+        #plt.xscale('log')
         plt.xlabel("Compilation time (s)")
         plt.ylabel("Count")
 

@@ -41,9 +41,9 @@ INPUT = open(args.input_file, 'r')
 num_clients = args.num_clients
 
 if args.ldcf_plus:
-    algos = ('FCFS', 'LDCF', 'RR', 'ALDF')
+    algos = ('FCFS', 'LDCF', 'RR', 'ALDCF')
 else:
-    algos = ('FCFS', 'RR', 'ALDF')
+    algos = ('FCFS', 'RR', 'ALDCF')
 clients = (str(i) for i in range(num_clients))
 
 client_runtime = {algo: [0 for _ in range(num_clients)] for algo in algos}
@@ -62,7 +62,7 @@ for line in INPUT:
     if 'fcfs_server' == line_spl[0]:
         client_runtime['FCFS'][int(line_spl[1]) - 1] += float(line_spl[3])
     elif 'ildf_server' == line_spl[0]:
-        client_runtime['ALDF'][int(line_spl[1]) - 1] += float(line_spl[3])
+        client_runtime['ALDCF'][int(line_spl[1]) - 1] += float(line_spl[3])
     elif 'round_robin_server' == line_spl[0]:
         client_runtime['RR'][int(line_spl[1]) - 1] += float(line_spl[3])
 

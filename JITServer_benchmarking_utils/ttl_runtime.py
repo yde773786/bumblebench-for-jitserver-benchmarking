@@ -30,7 +30,7 @@ args = parser.parse_args()
 INPUT = open(args.input_file, 'r')
 num_clients = args.num_clients
 
-algos = ('FCFS', 'ALDF', 'RR', 'LDCF')
+algos = ('FCFS', 'ALDCF', 'RR', 'LDCF')
 clients = (str(i) for i in range(num_clients))
 
 client_runtime = {algo: [0 for _ in range(num_clients)] for algo in algos}
@@ -44,7 +44,7 @@ multiplier = 0
 for line in INPUT:
     line_spl = line.split(',')
     if 'ildf_server' == line_spl[0]:
-        client_runtime['ALDF'][int(line_spl[1]) - 1] += float(line_spl[3])
+        client_runtime['ALDCF'][int(line_spl[1]) - 1] += float(line_spl[3])
     elif 'fcfs_server' == line_spl[0]:
         client_runtime['FCFS'][int(line_spl[1]) - 1] += float(line_spl[3])
     elif 'round_robin_server' == line_spl[0]:

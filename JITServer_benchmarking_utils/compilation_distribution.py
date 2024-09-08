@@ -99,7 +99,7 @@ if __name__ == "__main__":
         #plt.xscale('log')
         plt.xlabel("Compilation time (s)")
         plt.ylabel("Count")
-
+        plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
         #fig, ax = plt.subplots()
         if figure_export_name is not None:
             plt.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")

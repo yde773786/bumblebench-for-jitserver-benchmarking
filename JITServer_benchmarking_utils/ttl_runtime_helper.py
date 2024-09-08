@@ -32,6 +32,7 @@ parser.add_argument('-p', '--percentiles', type=str, required=False, help='The p
 parser.add_argument('-lp', '--ldcf_plus', action='store_true')
 parser.add_argument('-me', '--mix_even', action='store_true')
 parser.add_argument('-mo', '--mix_odd', action='store_true')
+parser.add_argument('-vl', '--vertical_legend', action='store_true')
 # Parse the arguments
 args = parser.parse_args()
 if args.percentiles is not None:
@@ -66,17 +67,18 @@ for line in INPUT:
     elif 'round_robin_server' == line_spl[0]:
         client_runtime['RR'][int(line_spl[1]) - 1] += float(line_spl[3])
 
-print(client_runtime)
+#print(client_runtime)
+for algo in algos:
+    b = client_runtime.get(algo)
+    a = [i for i in b if i != 0]
+    client_runtime[algo] = a
+
 if args.percentiles is not None:
     for percentile in percentiles:
         for algo in algos:
             client_percentiles[algo][percentiles.index(percentile)] = pd.Series(client_runtime[algo]).quantile(percentile / 100)
 if args.percentiles is not None:
     print(client_percentiles)
-for algo in algos:
-    b = client_runtime.get(algo)
-    a = [i for i in b if i != 0]
-    client_runtime[algo] = a
 data_frames = []
 df = pd.DataFrame(client_runtime)
 data_frames.append(df)
@@ -98,10 +100,11 @@ if args.percentiles is not None:
 
 plt.xlim(0, max([max(client_runtime[algo]) for algo in algos]))
 plt.ylim(0, 1)
-if args.ldcf_plus:
-    plt.legend(["ALDCF","RR", "LDCF", "FCFS"],loc="upper left", ncol=4)
-else:
-    plt.legend(["ALDCF", "RR", "FCFS"],loc="upper left", ncol=3)
+if not args.vertical_legend:
+    if args.ldcf_plus:
+        plt.legend(["ALDCF","RR", "LDCF", "FCFS"],loc="upper left", ncol=4)
+    else:
+        plt.legend(["ALDCF", "RR", "FCFS"],loc="upper left", ncol=3)
 fig = plot.get_figure()
 fig.savefig(f'{args.save_fig_path}.pdf', format="pdf", bbox_inches="tight")
 

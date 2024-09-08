@@ -83,7 +83,7 @@ def create_graphs(total_data, particular_client, graph_all, server, longest_clie
                 plt.plot(x, y)
     #plt.title("Client runtime vs run at the JITServer")
     plt.xlabel("Iteration number")
-    plt.ylabel("Runtime")
+    plt.ylabel("Iteration runtime (s)")
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

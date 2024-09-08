@@ -84,19 +84,23 @@ df = pd.DataFrame(client_runtime)
 data_frames.append(df)
 both = pd.concat(data_frames, axis=1)
 plot = seaborn.ecdfplot(data=both)
-#plt.title("Akka-Uct (100s S.T)")
+
 plt.xlabel("Completion time (s)")
 if args.percentiles is not None:
     for percentile in percentiles:
         # plt.axhline(y=percentile / 100, color='grey', linestyle='--')
         max_x = 0
+        color_list = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        color_counter = 0
         for algo in algos:
+
             x_value = client_percentiles[algo][percentiles.index(percentile)]
             if x_value > max_x:
                 max_x = x_value
-            plt.vlines(x=x_value, ymin=0, ymax=percentile / 100, color='red', linestyle=(5, (10, 3)))
+            plt.vlines(x=x_value, ymin=0, ymax=percentile / 100, color=color_list[color_counter], linestyle=(5, (10, 3)))
+            color_counter += 1
 
-        plt.hlines(y=percentile / 100, xmin=0, xmax=max_x, color='red', linestyle=(5, (8, 3)))
+        plt.hlines(y=percentile / 100, xmin=0, xmax=max_x, color='grey', linestyle=(5, (8, 3)))
 
 plt.xlim(0, max([max(client_runtime[algo]) for algo in algos]))
 plt.ylim(0, 1)

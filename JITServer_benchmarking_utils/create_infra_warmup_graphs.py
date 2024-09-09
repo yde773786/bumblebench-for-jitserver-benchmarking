@@ -56,6 +56,6 @@ if __name__ == "__main__":
     # # # plt.fill_between(x,0,400, where=x>65, facecolor='red')
     # plt.axhspan(15,30, alpha=.2, color='red')
     #plt.plot(x, y)
-    plt.savefig(f'dotty_vs_future_warmup.pdf', format="pdf", bbox_inches="tight")
+    plt.savefig(f'dotty_vs_future_warmup.pdf', format="pdf")
     #plt.show()
 

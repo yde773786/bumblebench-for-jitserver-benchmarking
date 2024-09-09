@@ -91,13 +91,14 @@ def graph_ttl_helper(ainput_file, asave_fig_path, anum_clients, apercentiles, al
 
     plt.xlim(0, max([max(client_runtime[algo]) for algo in algos]))
     plt.ylim(0, 1)
-    if not avertical_legend:
-        if aldcf_plus:
-            plt.legend(["ALDCF","RR", "LDCF", "FCFS"],loc="upper left", ncol=4)
-        else:
-            plt.legend(["ALDCF", "RR", "FCFS"],loc="upper left", ncol=3)
+    # if not avertical_legend:
+    #     if aldcf_plus:
+    #         plt.legend(["ALDCF","RR", "LDCF", "FCFS"],loc="upper left", ncol=4)
+    #     else:
+    #         plt.legend(["ALDCF", "RR", "FCFS"],loc="upper left", ncol=3)
     fig = plot.get_figure()
-    fig.savefig(f'{asave_fig_path}.pdf', format="pdf", bbox_inches="tight")
+    if asave_fig_path is not None:
+        fig.savefig(f'{asave_fig_path}.pdf', format="pdf")
 
 if __name__ == "__main__":
     # Create the parser

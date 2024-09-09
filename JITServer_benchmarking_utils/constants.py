@@ -3,7 +3,7 @@ directories = ['fcfs_server', 'round_robin_server','ildf_server', 'least_done_fi
 font_size = 8
 legend_size = 7
 COLUMN_WIDTH = 241.14749 / 72.27
-COLUMN_HEIGHT = 2
+COLUMN_HEIGHT = 1.5
 # 8,7 CDF (COLUMN_WIDTH,2)
 # 8,7 TEMP (COLUMN_WIDTH,2)
 # 8,7 VS (COLUMN_WIDTH,2)

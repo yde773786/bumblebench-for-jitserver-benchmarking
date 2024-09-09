@@ -102,7 +102,7 @@ if __name__ == "__main__":
         plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
         #fig, ax = plt.subplots()
         if figure_export_name is not None:
-            plt.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")
+            plt.savefig(f'{figure_export_name}.pdf', format="pdf")
             #fig.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")
 
     else:
@@ -112,6 +112,6 @@ if __name__ == "__main__":
         plt.yscale('log',base=10)
         plt.xlim(0, maxim)
         if figure_export_name is not None:
-            fig.savefig(f'{figure_export_name}.pdf', format="pdf", bbox_inches="tight")
+            fig.savefig(f'{figure_export_name}.pdf', format="pdf")
     if figure_export_name is None:
         plt.show()
